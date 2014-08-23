@@ -38,9 +38,7 @@
                (size! screen w-width w-height)
                [wall
                 (doto (cell/create-cell-entity! screen)
-                  (body-position! 30
-                                  30
-                                  0)
+                  (body-position! 0 0 0)
                   (body! :set-linear-velocity 100 100))]))
 
            :on-render
@@ -69,11 +67,11 @@
                (replace {(cell/find-cell entities)
                           (cell/move-cell entities :right)}
                         entities)
-               nil)
+               nil))
 
-             :on-resize
-             (fn [screen _]
-               (width! screen w-width))))
+           :on-resize
+           (fn [screen _]
+             (size! screen w-width w-height)))
 
 (defgame con-world
          :on-create
