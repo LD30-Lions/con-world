@@ -3,33 +3,9 @@
             [play-clj.g2d :refer :all]
             [play-clj.ui :refer :all]
             [play-clj.g2d-physics :refer :all]
-            ))
+            [con-world.cell :as cell]))
 
 (declare main-screen con-world)
-
-(defn create-cell-body!
-  [screen radius]
-  (let [body (add-body! screen (body-def :dynamic))]
-    (->> (circle-shape radius)
-         (fixture-def :density 1 :friction 0 :restitution 1 :shape)
-         (body! body :create-fixture))
-    body))
-
-(defn create-cell-entity!
-  [screen]
-  (let [ball (texture "ball.png")
-        width (texture! ball :get-region-width)
-        height (texture! ball :get-region-height)]
-    (assoc ball
-           :body (create-cell-body! screen (/ width 2))
-           :width width :height height
-           :cell? true)))
-
-
-(defn set-cell-x [screen entities]
-  (let [cell (some #(when (:cell? %) %) entities)]
-    (assoc cell
-           (+ (:x cell) 5))))
 
 (defscreen main-screen
   :on-show
@@ -38,7 +14,7 @@
              :renderer (stage)
              :camera (orthographic)
              :world (box-2d 0 0))
-    (create-cell-entity! screen))
+    (cell/create-cell-entity! screen))
   
   :on-render
   (fn [screen entities]
@@ -49,10 +25,22 @@
     (fn [screen entities]
       (condp = (:key screen)
         (key-code :dpad-up)
-        (set-cell-x screen entities)
-
-        nil)
-      entities)
+        (replace {(cell/find-cell entities)
+                  (cell/move-cell entities :up)}
+                 entities)
+        (key-code :dpad-down)
+        (replace {(cell/find-cell entities)
+                   (cell/move-cell entities :down)}
+                 entities)
+        (key-code :dpad-left)
+        (replace {(cell/find-cell entities)
+                   (cell/move-cell entities :left)}
+                 entities)
+        (key-code :dpad-right)
+        (replace {(cell/find-cell entities)
+                   (cell/move-cell entities :right)}
+                 entities)
+        nil))
 
   :on-resize
   (fn [screen entities]

@@ -1,5 +1,6 @@
 
 ~~~clojure
+(in-ns 'con-world.core)
 (set-screen-wrapper! (fn [screen screen-fn]
                        (try (screen-fn)
                          (catch Exception e
