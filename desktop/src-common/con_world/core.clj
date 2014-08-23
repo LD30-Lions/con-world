@@ -39,11 +39,14 @@
                [wall
                 (doto (cell/create-cell-entity! screen)
                   (body-position! 0 0 0)
-                  (body! :set-linear-velocity 100 100))]))
+                  (body! :set-linear-velocity 0 0))]))
 
            :on-render
            (fn [screen entities]
              (clear!)
+             #_(-> (cell/find-cell entities)
+                 (body! :get-linear-velocity)
+                 println)
              (->> entities
                   (step! screen)
                   (render! screen)))
