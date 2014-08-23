@@ -1,7 +1,14 @@
 data_readers.clj
 hs_err_pid*.log
-pom.xml
-pom.xml.asc
 **/gen
 **/target
 *~
+*jar
+/lib/
+/classes/
+/target/
+/checkouts/
+.lein-deps-sum
+.lein-repl-history
+.lein-plugins/
+.lein-failures
