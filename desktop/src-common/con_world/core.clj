@@ -60,6 +60,7 @@
                (set-screen! con-world game-over-screen)
                (->> entities
                     (step! screen)
+                    cell/change-cell-level
                     (map set-enemy-in-zone)
                     (render! screen))))
 
@@ -96,9 +97,16 @@
                    score (cell/find-score entities)]
                (if (and player enemy)
                  (if (< p-width e-width)
-                   (let [new-life (- (:life player) 5)]
+                   (let [new-life (- (:life player) 5)
+                         new-level (condp <= new-life
+                                     5 1
+                                     10 2
+                                     15 3
+                                     20 4
+                                     25 5
+                                     (:level player))]
                      (->> entities
-                          (replace {player (assoc player :life new-life)})
+                          (replace {player (assoc player :life new-life :level new-level)})
                           (replace {score (doto score
                                             (label! :set-text (str new-life)))})))
                    (let [new-life (inc (:life player))]

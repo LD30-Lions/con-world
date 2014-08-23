@@ -22,7 +22,8 @@
       :body (create-cell-body! screen (/ width 2))
       :width width :height height
       :cell? true
-      :life 1)))
+      :life 1
+      :level 1)))
 
 (def direction->velocity
   {:up    (vector-2 0 u/y-velocity)
@@ -97,3 +98,9 @@
           :z-side z-side)
       (body-position! x y 0)
       (body! :set-linear-velocity x-velocity y-velocity))))
+
+(defn change-cell-level [entities]
+  (let [cell (find-cell entities)]
+    (replace {cell (merge cell
+                          (texture (str "cell" (:level cell) ".png")))}
+             entities)))
