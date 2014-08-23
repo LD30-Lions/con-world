@@ -1,12 +1,28 @@
 (ns con-world.core
+  (:import (com.badlogic.gdx.physics.box2d Contact WorldManifold)
+           (com.badlogic.gdx.math Vector2))
   (:require [play-clj.core :refer :all]
             [play-clj.g2d :refer :all]
+            [play-clj.math :refer :all]
             [play-clj.ui :refer :all]
             [play-clj.g2d-physics :refer :all]
             [con-world.cell :as cell]
             [con-world.utils :as u]))
 
 (declare main-screen con-world)
+
+(defn in-rectangle? [{:keys [x y width height]} r]
+  (and (rectangle! r :contains x y) (rectangle! r :contains (+ x width) (+ y height))))
+
+(defn set-enemy-in-zone [{:keys [in-zone? enemy?] :as entity}]
+  (if (and (not in-zone?) enemy?)
+    (let [r (rectangle 0 0 u/w-width u/w-height)]
+      (if (in-rectangle? entity r)
+        (do
+          (println "in zone")
+          (assoc entity :in-zone? true))
+        entity))
+    entity))
 
 (defscreen main-screen
            :on-show
@@ -15,10 +31,11 @@
                                    :camera (orthographic)
                                    :renderer (stage)
                                    :world (box-2d 0 0))
-                   wall (doto {:body (u/create-rect-body! screen u/w-width u/z-height)}
-                          (body-position! 0 0 0))
-                   player (cell/create-cell-entity! screen)]
 
+                   player (cell/create-cell-entity! screen)
+                   wall (doto {:body  (cell/create-rect-body! screen u/w-width u/z-height)
+                               :wall? true}
+                          (body-position! 0 0 0))]
                (size! screen u/w-width u/w-height)
                [wall
                 (doto player
@@ -36,6 +53,7 @@
              (clear!)
              (->> entities
                   (step! screen)
+                  (map set-enemy-in-zone)
                   (render! screen)))
 
            :on-key-down
@@ -63,7 +81,7 @@
            (fn [screen _]
              (size! screen u/w-width u/w-height))
 
-           :on-begin-contact
+           :on-end-contact
            (fn [screen entities]
              (let [coliding-entities [(first-entity screen entities) (second-entity screen entities)]
                    {p-width :width :as player} (cell/find-cell coliding-entities)
@@ -82,7 +100,25 @@
                           (replace {score (doto score
                                             (label! :set-text (str new-life)))})
                           (replace {player (assoc player :life new-life)}))))
-                 entities))))
+                 entities)))
+
+           :on-pre-solve
+           (fn [{:keys [^Contact contact] :as screen} entities]
+             (let [coliding-entities [(first-entity screen entities) (second-entity screen entities)]
+                   {:keys [z-side in-zone?] :as enemy} (first (filter :enemy? coliding-entities))
+                   wall (first (filter :wall? coliding-entities))
+                   normal (-> contact
+                              (.getWorldManifold)
+                              (.getNormal))
+                   disable-contact (and (not in-zone?)
+                                        (or
+                                          (and (= z-side :right) (= normal (vector-2 1.0 0.0)))
+                                          (and (= z-side :bottom) (= normal (vector-2 0.0 -1.0)))
+                                          (and (= z-side :left) (= normal (vector-2 -1.0 0.0)))
+                                          ))]
+               (when (and enemy wall disable-contact disable-contact)
+                 (.setEnabled contact false))
+               entities)))
 
 (defgame con-world
          :on-create
