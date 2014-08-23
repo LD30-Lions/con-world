@@ -8,4 +8,6 @@
                            (set-screen! con-world main-screen)))))
                            
 (con-world.core.desktop-launcher/-main)
+
+(on-gl (set-screen! con-world main-screen))
 ~~~

@@ -12,3 +12,6 @@ hs_err_pid*.log
 .lein-repl-history
 .lein-plugins/
 .lein-failures
+.idea
+.nrepl-port
+*.iml
