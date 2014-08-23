@@ -27,9 +27,9 @@
   :on-render
   (fn [screen entities]
     (clear!)
-    (let [entities (step! screen entities)]
-      #_(println entities)
-      (render! screen entities)))
+    (->> entities
+         (step! screen)
+         (render! screen)))
 
   :on-key-down
     (fn [screen entities]
