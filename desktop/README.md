@@ -10,5 +10,6 @@
                            
 (con-world.core.desktop-launcher/-main)
 
+(in-ns 'con-world.core)
 (on-gl (set-screen! con-world main-screen))
 ~~~
