@@ -7,9 +7,9 @@
 
 (declare main-screen con-world)
 
-(def tile-width 50)
-(def w-width (* 10 tile-width))
-(def w-height (* 30 tile-width))
+(def pixels-per-tile 22)                                         ; 528 / 24
+(def w-width (/ (game :width) pixels-per-tile))
+(def w-height (/ (game :height) pixels-per-tile))
 
 (defn create-rect-body!
   [screen width height]

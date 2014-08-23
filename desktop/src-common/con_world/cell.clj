@@ -14,20 +14,22 @@
 (defn create-cell-entity!
   [screen]
   (let [ball (texture "ball.png")
-        width (texture! ball :get-region-width)
-        height (texture! ball :get-region-height)]
+        width (/ (texture! ball :get-region-width) con-world.core/pixels-per-tile)
+        height (/ (texture! ball :get-region-height) con-world.core/pixels-per-tile)]
     (assoc ball
       :body (create-cell-body! screen (/ width 2))
-      :width width :height height
+      :width 1 :height height
       :cell? true)))
+
+(def direction->velocity
+  {:up    (vector-2 0 25)
+   :down  (vector-2 0 -25)
+   :left  (vector-2 -25 0)
+   :right (vector-2 25 0)})
 
 (defn change-velocity [entity direction]
   (let [current-velocity (body! entity :get-linear-velocity)
-        new-velocity (condp = direction
-                       :up    (vector-2 0 200)
-                       :down  (vector-2 0 -200)
-                       :left  (vector-2 -200 0)
-                       :right (vector-2 200 0))]
+        new-velocity (direction direction->velocity)]
     (body! entity
            :set-linear-velocity (vector-2! current-velocity :add new-velocity))
     entity))
@@ -36,8 +38,6 @@
   (let [cell (some #(when (:cell? %) %) entities)]
     (println (body! cell :get-linear-velocity))
     (change-velocity cell direction)))
-
-
 
 (defn find-cell [entities]
   (some #(when (:cell? %) %) entities))
