@@ -1,4 +1,5 @@
 (ns con-world.cell
+  (:import (com.badlogic.gdx.physics.box2d Filter))
   (:require [play-clj.g2d-physics :refer :all]
             [play-clj.g2d :refer :all]
             [play-clj.math :refer :all]
@@ -50,24 +51,40 @@
          (body! body :create-fixture))
     body))
 
+(defn create-rect-body!
+  [screen width height]
+  (let [body (add-body! screen (body-def :static))]
+    (->> [0 0
+          0 height
+          width height
+          width 0
+          0 0]
+         float-array
+         (chain-shape :create-chain)
+         (fixture-def :density 1 :shape)
+         (body! body :create-fixture))
+    body))
+
+(def direction [:right :bottom :left])
+
 (defn spawn-enemy [screen]
   (let [enemy (texture "enemy.png")
         width (u/pixels->world (texture! enemy :get-region-width))
         height (u/pixels->world (texture! enemy :get-region-height))
         x-max (- u/z-width width)
         y-max (- u/z-height height)
-        z-side (rand-int 4)
+        z-side (direction (rand-int 3))
         [x y x-velocity y-velocity]
-              (condp = z-side
-                0 [(rand-int x-max) y-max u/x-velocity (- u/y-velocity)]
-                1 [x-max (rand-int y-max) (- u/x-velocity) u/y-velocity]
-                2 [(rand-int x-max) 0 u/x-velocity u/y-velocity]
-                3 [0 (rand-int y-max) u/x-velocity u/y-velocity])]
-    (println [x y])
+        (condp = z-side
+          :right [(+ x-max width) (rand-int y-max) (- u/x-velocity) u/y-velocity]
+          :bottom [(rand-int x-max) (- height) u/x-velocity u/y-velocity]
+          :left [(- width) (rand-int y-max) u/x-velocity u/y-velocity])]
+    (println [x y z-side])
     (doto
         (assoc enemy
           :body (create-enemy-body! screen (/ width 2))
           :width width :height height
-          :enemy? true)
+          :enemy? true
+          :z-side z-side)
       (body-position! x y 0)
       (body! :set-linear-velocity x-velocity y-velocity))))
