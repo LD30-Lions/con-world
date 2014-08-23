@@ -20,7 +20,8 @@
     (assoc ball
       :body (create-cell-body! screen (/ width 2))
       :width width :height height
-      :cell? true)))
+      :cell? true
+      :life 1)))
 
 (def direction->velocity
   {:up    (vector-2 0 u/y-velocity)
@@ -42,6 +43,15 @@
 (defn find-cell [entities]
   (some #(when (:cell? %) %) entities))
 
+(defn find-enemy [entities]
+  (some #(when (:enemy? %) %) entities))
+
+(defn find-wall [entities]
+  (some #(when (:wall? %) %) entities))
+
+(defn find-score [entities]
+  (some #(when (:score? %) %) entities))
+
 (defn create-enemy-body!
   [screen radius]
   (let [body (add-body! screen (body-def :dynamic :linear-damping 5))]
@@ -51,7 +61,7 @@
     body))
 
 (defn spawn-enemy [screen]
-  (let [enemy (texture "enemy.png")
+  (let [enemy (texture (str "enemy" (+ 1 (rand-int 3)) ".png"))
         width (u/pixels->world (texture! enemy :get-region-width))
         height (u/pixels->world (texture! enemy :get-region-height))
         x-max (- u/z-width width)
@@ -63,7 +73,6 @@
                 1 [x-max (rand-int y-max) (- u/x-velocity) u/y-velocity]
                 2 [(rand-int x-max) 0 u/x-velocity u/y-velocity]
                 3 [0 (rand-int y-max) u/x-velocity u/y-velocity])]
-    (println [x y])
     (doto
         (assoc enemy
           :body (create-enemy-body! screen (/ width 2))
