@@ -22,8 +22,14 @@
         height (texture! ball :get-region-height)]
     (assoc ball
            :body (create-cell-body! screen (/ width 2))
-           :width width :height height)))
+           :width width :height height
+           :cell? true)))
 
+
+(defn set-cell-x [screen entities]
+  (let [cell (some #(when (:cell? %) %) entities)]
+    (assoc cell
+           (+ (:x cell) 5))))
 
 (defscreen main-screen
   :on-show
@@ -38,6 +44,15 @@
   (fn [screen entities]
     (clear!)
     (render! screen entities))
+
+  :on-key-down
+    (fn [screen entities]
+      (condp = (:key screen)
+        (key-code :dpad-up)
+        (set-cell-x screen entities)
+
+        nil)
+      entities)
 
   :on-resize
   (fn [screen entities]
