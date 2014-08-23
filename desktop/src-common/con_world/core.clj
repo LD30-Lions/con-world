@@ -3,27 +3,10 @@
             [play-clj.g2d :refer :all]
             [play-clj.ui :refer :all]
             [play-clj.g2d-physics :refer :all]
-            [con-world.cell :as cell]))
+            [con-world.cell :as cell]
+            [con-world.utils :as u]))
 
 (declare main-screen con-world)
-
-(def tile-width 50)
-(def w-width (* 10 tile-width))
-(def w-height (* 30 tile-width))
-
-(defn create-rect-body!
-  [screen width height]
-  (let [body (add-body! screen (body-def :static))]
-    (->> [0 0
-          0 height
-          width height
-          width 0
-          0 0]
-         float-array
-         (chain-shape :create-chain)
-         (fixture-def :density 1 :shape)
-         (body! body :create-fixture))
-    body))
 
 (defscreen main-screen
            :on-show
@@ -32,14 +15,15 @@
                                    :camera (orthographic)
                                    :renderer (stage)
                                    :world (box-2d 0 0))
-                   wall (doto {:body (create-rect-body! screen w-width w-height)}
+                   wall (doto {:body (u/create-rect-body! screen u/w-width u/z-height)}
                           (body-position! 0 0 0))]
 
-               (size! screen w-width w-height)
+               (size! screen u/w-width u/w-height)
                [wall
                 (doto (cell/create-cell-entity! screen)
                   (body-position! 0 0 0)
-                  (body! :set-linear-velocity 0 0))]))
+                  (body! :set-linear-velocity 0 0))
+                (cell/spawn-enemy screen)]))
 
            :on-render
            (fn [screen entities]
@@ -74,7 +58,7 @@
 
            :on-resize
            (fn [screen _]
-             (size! screen w-width w-height)))
+             (size! screen u/w-width u/w-height)))
 
 (defgame con-world
          :on-create
