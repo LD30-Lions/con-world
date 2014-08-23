@@ -11,18 +11,7 @@
 
 (declare main-screen con-world intro-screen game-over-screen)
 
-(defn in-rectangle? [{:keys [x y width height]} r]
-  (and (rectangle! r :contains x y) (rectangle! r :contains (+ x width) (+ y height))))
 
-(defn set-enemy-in-zone [{:keys [in-zone? enemy?] :as entity}]
-  (if (and (not in-zone?) enemy?)
-    (let [r (rectangle 0 0 u/w-width u/w-height)]
-      (if (in-rectangle? entity r)
-        (do
-          (println "in zone")
-          (assoc entity :in-zone? true))
-        entity))
-    entity))
 
 (defn game-over? [entities]
   (-> (cell/find-cell entities)
@@ -61,7 +50,8 @@
                (->> entities
                     (step! screen)
                     cell/change-cell-level
-                    (map set-enemy-in-zone)
+                    (map cell/set-enemy-in-zone)
+                    (map cell/move-enemy)
                     (render! screen))))
 
            :on-key-down
