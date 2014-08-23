@@ -7,19 +7,29 @@
 
 (declare main-screen con-world)
 
+(def w-width (* 10 50))
+
 (defscreen main-screen
   :on-show
   (fn [screen _]
-    (update! screen
-             :renderer (stage)
-             :camera (orthographic)
-             :world (box-2d 0 0))
-    (cell/create-cell-entity! screen))
+    (let [screen (update! screen
+                          :camera (orthographic)
+                          :renderer (stage)
+                          :world (box-2d 0 0))]
+
+      (width! screen w-width)
+      [(doto (cell/create-cell-entity! screen)
+         (body-position! 30
+                         30
+                         0)
+         (body! :set-linear-velocity 10 10))]))
   
   :on-render
   (fn [screen entities]
     (clear!)
-    (render! screen entities))
+    (let [entities (step! screen entities)]
+      #_(println entities)
+      (render! screen entities)))
 
   :on-key-down
     (fn [screen entities]
@@ -40,13 +50,11 @@
         (replace {(cell/find-cell entities)
                    (cell/move-cell entities :right)}
                  entities)
-        nil))
+        nil)
 
-  :on-resize
-  (fn [screen entities]
-    (height! screen 300)))
-
-
+      :on-resize
+        (fn [screen _]
+          (width! screen w-width))))
 
 (defgame con-world
   :on-create

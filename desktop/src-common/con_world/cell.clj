@@ -18,7 +18,6 @@
     (assoc ball
       :body (create-cell-body! screen (/ width 2))
       :width width :height height
-      :x 0 :y 0
       :cell? true)))
 
 (defn move-cell [entities direction]
