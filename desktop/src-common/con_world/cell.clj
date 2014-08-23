@@ -18,12 +18,13 @@
     (assoc ball
       :body (create-cell-body! screen (/ width 2))
       :width width :height height
-      :x 0 :y 0
       :cell? true)))
 
 (defn move-cell [entities direction]
   (let [cell (some #(when (:cell? %) %) entities)]
-    (condp = direction
+    (println (body! cell :get-linear-velocity))
+    cell
+    #_(condp = direction
       :up   (assoc cell
               :y (+ (:y cell) 5))
       :down (assoc cell
