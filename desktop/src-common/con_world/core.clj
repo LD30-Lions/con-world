@@ -11,6 +11,19 @@
 
 (declare main-screen con-world)
 
+(defn in-rectangle? [{:keys [x y width height]} r]
+  (and (rectangle! r :contains x y) (rectangle! r :contains (+ x width) (+ y height))))
+
+(defn set-enemy-in-zone [{:keys [in-zone? enemy?] :as entity}]
+  (if (and (not in-zone?) enemy?)
+    (let [r (rectangle 0 0 u/w-width u/w-height)]
+      (if (in-rectangle? entity r)
+        (do
+          (println "in zone")
+          (assoc entity :in-zone? true))
+        entity))
+    entity))
+
 (defscreen main-screen
            :on-show
            (fn [screen _]
@@ -32,11 +45,9 @@
            :on-render
            (fn [screen entities]
              (clear!)
-             #_(-> (cell/find-cell entities)
-                 (body! :get-linear-velocity)
-                 println)
              (->> entities
                   (step! screen)
+                  (map set-enemy-in-zone)
                   (render! screen)))
 
            :on-key-down
@@ -67,20 +78,23 @@
            :on-pre-solve
            (fn [{:keys [^Contact contact] :as screen} entities]
              (let [coliding-entities [(first-entity screen entities) (second-entity screen entities)]
-                   {:keys [z-side] :as enemy} (first (filter :enemy? coliding-entities))
+                   {:keys [z-side in-zone?] :as enemy} (first (filter :enemy? coliding-entities))
                    wall (first (filter :wall? coliding-entities))
-
+                   ;_ (println "enemy" z-side x y width height)
                    normal (-> contact
                               (.getWorldManifold)
                               (.getNormal))
-                   disable-contact (or
-                                     (and (= z-side :right) (= normal (vector-2 1.0 0.0)))
-                                     (and (= z-side :bottom) (= normal (vector-2 0.0 -1.0)))
-                                     (and (= z-side :left) (= normal (vector-2 -1.0 0.0))))]
-               (if (and enemy wall disable-contact disable-contact)
-                 (do (.setEnabled contact false)
-                     (replace {enemy (assoc enemy :in-zone? true)} entities))
-                 entities))))
+                   disable-contact (and (not in-zone?)
+                                        (or
+                                          (and (= z-side :right) (= normal (vector-2 1.0 0.0)))
+                                          (and (= z-side :bottom) (= normal (vector-2 0.0 -1.0)))
+                                          (and (= z-side :left) (= normal (vector-2 -1.0 0.0)))
+                                          ))]
+               #_(println enemy normal disable-contact)
+               (when (and enemy wall disable-contact disable-contact)
+                 (do (println "disable" normal)
+                     (.setEnabled contact false)))
+               entities)))
 
 (defgame con-world
          :on-create

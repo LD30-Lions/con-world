@@ -45,7 +45,7 @@
 
 (defn create-enemy-body!
   [screen radius]
-  (let [body (add-body! screen (body-def :dynamic :linear-damping 5))]
+  (let [body (add-body! screen (body-def :dynamic :linear-damping 0))]
     (->> (circle-shape radius)
          (fixture-def :density 1 :friction 0 :restitution 1 :shape)
          (body! body :create-fixture))
