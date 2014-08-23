@@ -31,17 +31,19 @@
     (update! screen
              :renderer (stage)
              :camera (orthographic)
-             #_:world #_(box-2d 0 0))
-    #_(create-cell-entity! screen)
-    (assoc (label "foo" (color :white))
-      :x 5
-      :y 5))
+             :world (box-2d 0 0))
+    (create-cell-entity! screen))
   
   :on-render
   (fn [screen entities]
     (clear!)
-    (render! screen entities)
-    entities))
+    (render! screen entities))
+
+  :on-resize
+  (fn [screen entities]
+    (height! screen 300)))
+
+
 
 (defgame con-world
   :on-create
