@@ -32,7 +32,7 @@
                                :wall? true}
                           (body-position! 0 0 0))]
                (size! screen u/w-width u/w-height)
-               (add-timer! screen :spawn-enemy 5 3)
+               (add-timer! screen :spawn-enemy 1 2)
                (println "on-show")
                [wall
                 (cell/create-plante-zone! screen)
@@ -85,27 +85,13 @@
                    {e-width :width :as enemy} (cell/find-enemy coliding-entities)]
                (if (and player enemy)
                  (if (< p-width e-width)
-                   (let [new-life (- (:life player) 5)
-                         new-level (condp <= new-life
-                                     5 1
-                                     10 2
-                                     15 3
-                                     20 4
-                                     25 5
-                                     (:level player))]
+                   (let [new-life (- (:life player) 5)]
                      (run! score-screen :update-score :score new-life)
-                     (run! score-screen :update-level :level new-level)
-                     (replace {player (assoc player :life new-life :level new-level)} entities))
-                   (let [new-life (inc (:life player))
-                         new-level (condp <= new-life
-                                     5 1
-                                     10 2
-                                     15 3
-                                     20 4
-                                     25 5
-                                     (:level player))]
-                     (println "new-life" new-life "new-level" new-level)
-                     (run! score-screen :update-level :level new-level)
+                     (run! score-screen :update-level :level (cell/calculate-level player))
+                     (replace {player (assoc player :life new-life :level (cell/calculate-level player))} entities))
+                   (let [new-life (inc (:life player))]
+                     (println "new-life" new-life "new-level" (cell/calculate-level player))
+                     (run! score-screen :update-level :level (cell/calculate-level player))
                      (run! score-screen :update-score :score new-life)
                      (->> entities
                           (remove #(= % enemy))
