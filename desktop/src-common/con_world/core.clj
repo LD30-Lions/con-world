@@ -11,7 +11,7 @@
             [con-world.cell :as cell]
             [con-world.utils :as u]))
 
-(declare main-screen con-world intro-screen game-over-screen score-screen)
+(declare main-screen con-world intro-screen game-over-screen score-screen main-bg-screen)
 
 
 
@@ -20,13 +20,16 @@
       :life
       (<= 0)))
 
+(defn stage-fit-vp [camera]
+  (stage :set-viewport (FitViewport. u/res-width u/res-height camera)))
+
 (defscreen main-screen
            :on-show
            (fn [screen _]
-             (let [ camera (orthographic)
-                    screen (update! screen
+             (let [camera (orthographic)
+                   screen (update! screen
                                    :camera camera
-                                   :renderer (stage :set-viewport (FitViewport. u/res-width u/res-height camera))
+                                   :renderer (stage-fit-vp camera)
                                    :world (box-2d 0 0)
                                    :last-spawn 0)
                    player (cell/create-cell-entity! screen)
@@ -128,6 +131,26 @@
                (conj entities (cell/spawn-enemy screen))
                entities)))
 
+
+(defscreen main-bg-screen
+           :on-show
+           (fn [screen _]
+             (let [camera (orthographic)]
+               (update! screen
+                        :camera camera
+                        :renderer (stage-fit-vp camera))
+               (u/memo-texture "main-screen-background-1.png")))
+
+           :on-render
+           (fn [screen entities]
+             #_(println entities)
+             (clear! 0 1 0 1)
+             (render! screen entities))
+
+           :on-resize
+           (fn [screen _]
+             (size! screen u/w-width u/w-height)))
+
 (defscreen score-screen
            :on-show
            (fn [screen _]
@@ -165,6 +188,9 @@
 (defn intro-screen-background []
   (u/memo-texture "intro-screen-background.png"))
 
+(defn start-main-screens []
+  (set-screen! con-world main-screen score-screen main-bg-screen))
+
 (defscreen intro-screen
            :on-show
            (fn [screen _]
@@ -172,7 +198,7 @@
                    music (u/memo-sound "intro-screen-music.mp3")
                    camera (orthographic)]
                (update! screen
-                        :renderer (stage :set-viewport (FitViewport. u/res-height u/res-width camera))
+                        :renderer (stage-fit-vp camera)
                         :camera camera
                         :bg-width (texture! background :get-region-width)
                         :bg-height (texture! background :get-region-height)
@@ -186,7 +212,7 @@
              (if kill-screen?
                (do
                  (update! screen :kill-screen? false)
-                 (set-screen! con-world main-screen score-screen)
+                 (start-main-screens)
                  (sound! music :stop))
                (do (clear! 0 0 0 1)
                    (render! screen entities))))
@@ -214,7 +240,7 @@
 
            :on-key-down
            (fn [_ entities]
-             (set-screen! con-world main-screen score-screen)
+             (start-main-screens)
              entities)
 
            :on-resize
