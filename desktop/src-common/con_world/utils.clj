@@ -7,8 +7,11 @@
 (defn pixels->world [size]
   (/ size pixels-per-tile))
 
-(def w-width (pixels->world 1024))
-(def w-height (pixels->world 768))
+(def res-width 1024)
+(def res-height 768)
+
+(def w-width (pixels->world res-width))
+(def w-height (pixels->world res-height))
 
 (def z-width w-width)
 (def z-height (- w-height (pixels->world 290)))

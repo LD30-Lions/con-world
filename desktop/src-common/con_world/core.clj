@@ -1,6 +1,7 @@
 (ns con-world.core
   (:import (com.badlogic.gdx.physics.box2d Contact WorldManifold)
-           (com.badlogic.gdx.math Vector2))
+           (com.badlogic.gdx.math Vector2)
+           (com.badlogic.gdx.utils.viewport FitViewport))
   (:require [clojure.pprint :refer [pprint]]
             [play-clj.core :refer :all]
             [play-clj.g2d :refer :all]
@@ -22,9 +23,10 @@
 (defscreen main-screen
            :on-show
            (fn [screen _]
-             (let [screen (update! screen
-                                   :camera (orthographic)
-                                   :renderer (stage)
+             (let [ camera (orthographic)
+                    screen (update! screen
+                                   :camera camera
+                                   :renderer (stage :set-viewport (FitViewport. u/res-height u/res-width camera))
                                    :world (box-2d 0 0))
 
                    player (cell/create-cell-entity! screen)
@@ -169,8 +171,11 @@
            :on-show
            (fn [screen _]
              (let [background (intro-screen-background)
-                   music (u/memo-sound "intro-screen-music.mp3")]
-               (update! screen :renderer (stage) :camera (orthographic)
+                   music (u/memo-sound "intro-screen-music.mp3")
+                   camera (orthographic)]
+               (update! screen
+                        :renderer (stage :set-viewport (FitViewport. u/res-height u/res-width camera))
+                        :camera camera
                         :bg-width (texture! background :get-region-width)
                         :bg-height (texture! background :get-region-height)
                         :music music)
@@ -182,6 +187,7 @@
            (fn [{:keys [music kill-screen?] :as screen} entities]
              (if kill-screen?
                (do
+                 (update! screen :kill-screen? false)
                  (set-screen! con-world main-screen score-screen)
                  (sound! music :stop))
                (do (clear! 0 0 0 1)
