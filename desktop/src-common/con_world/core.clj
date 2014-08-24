@@ -230,7 +230,8 @@
 (defscreen game-over-screen
            :on-show
            (fn [screen _]
-             (update! screen :renderer (stage) :camera (orthographic))
+             (let [camera (orthographic)]
+               (update! screen :camera camera :renderer (stage-fit-vp camera)))
              (label "Game over" (color :red)))
 
            :on-render
