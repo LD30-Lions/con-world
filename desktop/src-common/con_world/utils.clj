@@ -15,4 +15,4 @@
 (def x-velocity 25)
 (def y-velocity 25)
 
-(def moving-slow 5)
+(def moving-slow -1)
