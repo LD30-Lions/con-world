@@ -23,6 +23,11 @@
 (defn stage-fit-vp [camera]
   (stage :set-viewport (FitViewport. u/res-width u/res-height camera)))
 
+(defn on-key-move-cell [entities direction]
+  (cell/cell-move-sound)
+  (replace {(cell/find-cell entities)
+                            (cell/move-cell entities direction)}
+                          entities))
 (defscreen main-screen
            :on-show
            (fn [screen _]
@@ -31,11 +36,14 @@
                                    :camera camera
                                    :renderer (stage-fit-vp camera)
                                    :world (box-2d 0 0)
-                                   :last-spawn 0)
+                                   :last-spawn 0
+                                   :music (u/memo-sound "sound/fond.mp3"))
                    player (cell/create-cell-entity! screen)
                    wall (doto {:body  (cell/create-rect-body! screen u/w-width u/z-height)
                                :wall? true}
                           (body-position! 0 0 0))]
+               (add-timer! screen :ambiant-sound 3 3)
+               (sound! (:music screen) :loop)
                [wall
                 (cell/create-plante-zone! screen)
                 (doto player
@@ -48,7 +56,8 @@
              (let [[screen entities] (cell/may-spawn-enemy screen entities)]
                (clear!)
                (if (game-over? entities)
-                 (set-screen! con-world game-over-screen)
+                 (do (set-screen! con-world game-over-screen)
+                     (sound! (:music screen) :stop))
                  (->> entities
                       (step! screen)
                       cell/change-cell-level
@@ -59,22 +68,19 @@
            :on-key-down
            (fn [screen entities]
              (condp = (:key screen)
+
                (key-code :dpad-up)
-               (replace {(cell/find-cell entities)
-                          (cell/move-cell entities :up)}
-                        entities)
+               (on-key-move-cell entities :up)
+
                (key-code :dpad-down)
-               (replace {(cell/find-cell entities)
-                          (cell/move-cell entities :down)}
-                        entities)
+               (on-key-move-cell entities :down)
+
                (key-code :dpad-left)
-               (replace {(cell/find-cell entities)
-                          (cell/move-cell entities :left)}
-                        entities)
+               (on-key-move-cell entities :left)
+
                (key-code :dpad-right)
-               (replace {(cell/find-cell entities)
-                          (cell/move-cell entities :right)}
-                        entities)
+               (on-key-move-cell entities :right)
+
                nil))
 
            :on-resize
@@ -132,13 +138,13 @@
                  (.setEnabled contact false))
                entities))
 
-           #_:on-timer
-           #_(fn [screen entities]
+           :on-timer
+           (fn [screen entities]
              (println "timer")
-             (if (= :spawn-enemy (:id screen))
-               (conj entities (cell/spawn-enemy screen))
+             (when (= :ambiant-sound (:id screen))
+               (when (= 0 (mod (rand-int 2) 2))
+                 (cell/ambiant-sound (cell/find-cell entities)))
                entities)))
-
 
 (defscreen main-bg-screen
            :on-show
@@ -244,7 +250,10 @@
            :on-show
            (fn [screen _]
              (let [camera (orthographic)]
-               (update! screen :camera camera :renderer (stage-fit-vp camera)))
+               (update! screen
+                        :camera camera
+                        :renderer (stage-fit-vp camera)))
+             #_(sound! (u/memo-sound "sound/gameover.wav") :play)
              (label "Game over" (color :red)))
 
            :on-render

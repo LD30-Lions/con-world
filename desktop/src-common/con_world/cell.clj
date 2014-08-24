@@ -128,8 +128,15 @@
 (defn play-sound [sound-path]
   (pcore/sound! (u/memo-sound sound-path) :play))
 
+(defn cell-move-sound []
+  (play-sound (str "sound/mouvement/" (inc (rand-int 4)) ".wav")))
+
+(defn ambiant-sound [{:keys [level]}]
+  (println "son ambiance " (str "sound/ambiance/" (nth (tonalites level) (rand-int 8)) ".wav"))
+  (when level (play-sound (str "sound/ambiance/" (nth (tonalites level) (rand-int 8)) ".wav"))))
+
 (defn spawn-enemy-sound [{:keys [level]}]
-  (let [sound-path (str "sound/apparitions/" (nth (tonalites level) (rand 8)) ".wav")]
+  (let [sound-path (str "sound/apparitions/" (nth (tonalites level) (rand-int 8)) ".wav")]
     (play-sound sound-path)))
 
 (defn kill-enemy-sound [{:keys [level]}]
