@@ -1,5 +1,6 @@
 (ns con-world.utils
   (:require [play-clj.g2d-physics :refer :all]
+            [play-clj.g2d :refer :all]
             [play-clj.core :refer :all]))
 
 (def pixels-per-tile 22) ; 528 / 24 = 22
@@ -16,3 +17,5 @@
 (def y-velocity 25)
 
 (def moving-slow 5)
+
+(def memo-texture (memoize (fn [name] (texture name))))

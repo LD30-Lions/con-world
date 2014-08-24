@@ -1,5 +1,6 @@
 (ns con-world.cell
-  (:import (com.badlogic.gdx.physics.box2d Filter))
+  (:import (com.badlogic.gdx.physics.box2d Filter)
+           (com.badlogic.gdx.math Vector2))
   (:require [play-clj.g2d-physics :refer :all]
             [play-clj.g2d :refer :all]
             [play-clj.math :refer :all]
@@ -49,7 +50,7 @@
     enemy-entity))
 
 (defn moving-fast? [entity]
-  (let [vec2-velocity (body! entity :get-linear-velocity)
+  (let [^Vector2 vec2-velocity (body! entity :get-linear-velocity)
         x-velocity (.x vec2-velocity)
         y-velocity (.y vec2-velocity)]
     (or (> x-velocity u/moving-slow) (> y-velocity u/moving-slow))))
@@ -113,8 +114,9 @@
 
 (def direction [:right :bottom :left])
 
+
 (defn spawn-enemy [screen]
-  (let [enemy (texture (str "enemy" (+ 1 (rand-int 3)) ".png"))
+  (let [enemy (u/memo-texture (str "enemy" (+ 1 (rand-int 3)) ".png"))
         width (u/pixels->world (texture! enemy :get-region-width))
         height (u/pixels->world (texture! enemy :get-region-height))
         x-max (- u/z-width width)
@@ -137,5 +139,5 @@
 (defn change-cell-level [entities]
   (let [cell (find-cell entities)]
     (replace {cell (merge cell
-                          (texture (str "cell" (:level cell) ".png")))}
+                          (u/memo-texture (str "cell" (:level cell) ".png")))}
              entities)))
