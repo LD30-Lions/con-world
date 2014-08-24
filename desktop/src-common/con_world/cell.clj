@@ -17,10 +17,16 @@
 
 (defn create-cell-entity!
   [screen]
-  (let [ball (texture "ball.png")
-        width (u/pixels->world (texture! ball :get-region-width))
-        height (u/pixels->world (texture! ball :get-region-height))]
-    (assoc ball
+  (let [sheet (texture "entities/cell1.png")
+        tiles (texture! sheet :split 40 40)
+        cell-images (for [col [0 1]]
+                      (texture (aget tiles 0 col)))
+        stand (first cell-images)
+        width (u/pixels->world (texture! stand :get-region-width))
+        height (u/pixels->world (texture! stand :get-region-height))]
+    (assoc stand
+      :stand stand
+      :walk (animation 0.2 cell-images :set-play-mode (play-mode :loop-pingpong))
       :body (create-cell-body! screen (/ width 2))
       :width width :height height
       :cell? true
@@ -205,3 +211,11 @@
       (spawn-enemy-sound (find-cell entities))
       [(play-clj.core/update! screen :last-spawn (int total-time)) (conj entities (spawn-enemy screen))])
     [screen entities]))
+
+(defn animate [screen entities]
+  (let [player (find-cell entities)
+        velocity (body! player :get-linear-velocity)
+        not-moving (vector-2! velocity :is-zero 1)]
+    (if not-moving
+      (replace {player (merge player (:stand player))} entities)
+      (replace {player (merge player (animation->texture screen (:walk player)))} entities))))
