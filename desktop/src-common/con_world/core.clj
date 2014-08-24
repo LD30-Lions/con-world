@@ -189,7 +189,7 @@
   (u/memo-texture "intro-screen-background.png"))
 
 (defn start-main-screens []
-  (set-screen! con-world main-screen score-screen main-bg-screen))
+  (set-screen! con-world main-screen score-screen #_main-bg-screen))
 
 (defscreen intro-screen
            :on-show

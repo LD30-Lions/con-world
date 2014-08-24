@@ -4,6 +4,7 @@
   (:require [play-clj.g2d-physics :refer :all]
             [play-clj.g2d :refer :all]
             [play-clj.math :refer :all]
+            [play-clj.core :refer [sound!] :as pcore]
             [con-world.utils :as u]))
 
 (defn create-cell-body!
@@ -55,8 +56,8 @@
         y-velocity (.y vec2-velocity)]
     (or (> x-velocity u/moving-slow) (> y-velocity u/moving-slow))))
 
-(defn move-enemy [{:keys [enemy?] :as entity}]
-  (if (and enemy? (not (moving-fast? entity)))
+(defn move-enemy [{:keys [enemy? in-zone?] :as entity}]
+  (if (and enemy? in-zone? (not (moving-fast? entity)))
     (change-enemy-velocity entity)
     entity))
 
@@ -118,7 +119,18 @@
          (body! body :create-fixture))
     body))
 
-(def direction [:right :bottom :left])
+(def directions [:right :bottom :left])
+
+(def tonalites {1 [9, 11, 12, 14, 16, 17, 19, 21]
+                2 [4, 6, 7, 9, 11, 12, 14, 16]
+                3 [11, 13, 14, 16, 18, 19, 21, 23]
+                4 [6, 8, 9, 11, 13, 14, 16, 18]
+                5 [1, 3, 4, 6, 8, 9, 11, 13]})
+
+(defn spawn-enemy-sound [{:keys [level]}]
+  (println level)
+  (let [sound-path (str "sound/apparitions/" (nth (tonalites level) (rand 8)) ".wav")]
+    (pcore/sound! (u/memo-sound sound-path) :play)))
 
 
 (defn spawn-enemy [screen]
@@ -127,12 +139,13 @@
         height (u/pixels->world (texture! enemy :get-region-height))
         x-max (- u/z-width width)
         y-max (- u/z-height height)
-        z-side (direction (rand-int 3))
+        z-side (directions (rand-int 3))
         [x y x-velocity y-velocity]
         (condp = z-side
-          :right [(+ x-max width) (rand-int y-max) (- u/cell-x-velocity) 0]
-          :bottom [(rand-int x-max) (- height) 0 u/cell-y-velocity]
-          :left [(- width) (rand-int y-max) u/cell-x-velocity 0])]
+          :right [(+ x-max) (rand-int y-max) (- u/cell-x-velocity) 0]
+          :bottom [(rand-int x-max) 0 0 u/cell-y-velocity]
+          :left [0 (rand-int y-max) u/cell-x-velocity 0])]
+    (println x y x-velocity y-velocity z-side)
     (doto
         (assoc enemy
           :body (create-enemy-body! screen (/ width 2))
@@ -169,5 +182,8 @@
   #_(println last-spawn (int total-time))
   (if (and (not= last-spawn (int total-time))
            (= 0 (mod (int total-time) 2)))
-    [(play-clj.core/update! screen :last-spawn (int total-time)) (conj entities (spawn-enemy screen))]
+    (do
+      (println "spawn!")
+      (spawn-enemy-sound (find-cell entities))
+      [(play-clj.core/update! screen :last-spawn (int total-time)) (conj entities (spawn-enemy screen))])
     [screen entities]))
