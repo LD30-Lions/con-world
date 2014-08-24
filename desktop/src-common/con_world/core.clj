@@ -32,9 +32,10 @@
                                :wall? true}
                           (body-position! 0 0 0))]
                (size! screen u/w-width u/w-height)
-               (add-timer! screen :spawn-enemy 5 3)
+               (add-timer! screen :spawn-enemy 1 2)
                (println "on-show")
                [wall
+                (cell/create-plante-zone! screen)
                 (doto player
                   (body-position! 0 0 0)
                   (body! :set-linear-velocity 0 0))
@@ -84,17 +85,13 @@
                    {e-width :width :as enemy} (cell/find-enemy coliding-entities)]
                (if (and player enemy)
                  (if (< p-width e-width)
-                   (let [new-life (- (:life player) 5)
-                         new-level (condp <= new-life
-                                     5 1
-                                     10 2
-                                     15 3
-                                     20 4
-                                     25 5
-                                     (:level player))]
+                   (let [new-life (- (:life player) 5)]
                      (run! score-screen :update-score :score new-life)
-                     (replace {player (assoc player :life new-life :level new-level)} entities))
+                     (run! score-screen :update-level :level (cell/calculate-level player))
+                     (replace {player (assoc player :life new-life :level (cell/calculate-level player))} entities))
                    (let [new-life (inc (:life player))]
+                     (println "new-life" new-life "new-level" (cell/calculate-level player))
+                     (run! score-screen :update-level :level (cell/calculate-level player))
                      (run! score-screen :update-score :score new-life)
                      (->> entities
                           (remove #(= % enemy))
@@ -106,6 +103,8 @@
              (let [coliding-entities [(first-entity screen entities) (second-entity screen entities)]
                    {:keys [z-side in-zone?] :as enemy} (cell/find-enemy coliding-entities)
                    wall (cell/find-wall coliding-entities)
+                   plante-zone (cell/find-plante-zone coliding-entities)
+                   player (cell/find-cell coliding-entities)
                    normal (-> contact
                               (.getWorldManifold)
                               (.getNormal))
@@ -118,10 +117,13 @@
                                           ))]
                (when (and enemy wall disable-contact disable-contact)
                  (.setEnabled contact false))
+               (when (and plante-zone player)
+                 (.setEnabled contact false))
                entities))
 
            :on-timer
            (fn [screen entities]
+             (println "timer")
              (if (= :spawn-enemy (:id screen))
                (conj entities (cell/spawn-enemy screen))
                entities)))
@@ -130,9 +132,16 @@
            :on-show
            (fn [screen _]
              (update! screen :renderer (stage) :camera (orthographic))
-             (assoc (label "" (color :white))
-               :y (- u/w-height 16)
-               :score? true))
+             [(assoc (label "vie 1" (color :white))
+                :y (- (game :height) 16)
+                :score? true)
+              (assoc (label "plante 1" (color :white))
+                :y (- (game :height) 16) :x 100
+                :plante-vie? true)
+              (assoc (label "level 1" (color :white))
+                :y (- (game :height) 16) :x 200
+                :level? true)])
+
 
            :on-render
            (fn [screen entities]
@@ -141,7 +150,12 @@
            :update-score
            (fn [{:keys [score]} entities]
              (let [score-label (cell/find-score entities)]
-               (replace {score-label (doto score-label (label! :set-text (str score)))} entities)))
+               (replace {score-label (doto score-label (label! :set-text (str "vie " score)))} entities)))
+
+           :update-level
+           (fn [{:keys [level]} entities]
+             (let [level-label (cell/find-level entities)]
+               (replace {level-label (doto level-label (label! :set-text (str "level " level)))} entities)))
 
            :on-resize
            (fn [screen entities]

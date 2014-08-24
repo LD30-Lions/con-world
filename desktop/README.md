@@ -7,11 +7,11 @@
                            (.printStackTrace e)
                            (show-entities)
                            (Thread/sleep 7777)
-                           (set-screen! con-world main-screen)))))
+                           (set-screen! con-world main-screen score-screen)))))
                            
 (con-world.core.desktop-launcher/-main)
 
 (in-ns 'con-world.core)
-(on-gl (set-screen! con-world main-screen))
+(on-gl (set-screen! con-world main-screen score-screen))
 
 ~~~

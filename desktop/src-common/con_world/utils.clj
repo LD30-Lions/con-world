@@ -16,7 +16,8 @@
 (def x-velocity 25)
 (def y-velocity 25)
 
-(def moving-slow 5)
+(def moving-slow -1)
 
 (def memo-texture (memoize (fn [name] (texture name))))
+
 (def memo-sound (memoize (fn [name] (sound name))))

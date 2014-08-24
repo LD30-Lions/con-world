@@ -90,6 +90,12 @@
 (defn find-score [entities]
   (some #(when (:score? %) %) entities))
 
+(defn find-plante-zone [entities]
+  (some #(when (:plante-zone? %) %) entities))
+
+(defn find-level [entities]
+  (some #(when (:level? %) %) entities))
+
 (defn create-enemy-body!
   [screen radius]
   (let [body (add-body! screen (body-def :dynamic :linear-damping 3))]
@@ -141,3 +147,20 @@
     (replace {cell (merge cell
                           (u/memo-texture (str "cell" (:level cell) ".png")))}
              entities)))
+
+(defn create-plante-zone!
+  [screen]
+  (let [zone (texture "plante-zone.png")
+        width (u/pixels->world (texture! zone :get-region-width))
+        height (u/pixels->world (texture! zone :get-region-height))]
+    (assoc zone
+      :body (doto (create-rect-body! screen width height)
+              (body-position! (/ u/z-width 2) (- u/z-height height) 0))
+      :width width :height height
+      :plante-zone? true)))
+
+(defn calculate-level [{:keys [life]}]
+  (let [mapping [[5 1], [10 2], [15 3], [20 4], [25 5]]]
+    (some (fn [[map-life map-level]]
+            (when (< life map-life) map-level))
+          mapping)))
