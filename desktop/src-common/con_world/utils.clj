@@ -16,10 +16,13 @@
 (def z-width w-width)
 (def z-height (- w-height (pixels->world 290)))
 
-(def x-velocity 25)
-(def y-velocity 25)
+(def cell-x-velocity 25)
+(def cell-y-velocity 25)
 
-(def moving-slow -1)
+(def enemy-x-velocity 35)
+(def enemy-y-velocity 35)
+
+(def moving-slow 1)
 
 (def memo-texture (memoize (fn [name] (texture name))))
 

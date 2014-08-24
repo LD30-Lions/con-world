@@ -27,10 +27,10 @@
       :level 1)))
 
 (def direction->velocity
-  {:up    (vector-2 0 u/y-velocity)
-   :down  (vector-2 0 (- u/y-velocity))
-   :left  (vector-2 (- u/x-velocity) 0)
-   :right (vector-2 u/x-velocity 0)})
+  {:up    (vector-2 0 u/cell-y-velocity)
+   :down  (vector-2 0 (- u/cell-y-velocity))
+   :left  (vector-2 (- u/cell-x-velocity) 0)
+   :right (vector-2 u/cell-x-velocity 0)})
 
 (defn change-cell-velocity [cell-entity direction]
   (let [current-velocity (body! cell-entity :get-linear-velocity)
@@ -44,7 +44,7 @@
 
 (defn change-enemy-velocity [enemy-entity]
   (let [current-velocity (body! enemy-entity :get-linear-velocity)
-        new-velocity (vector-2 (rand-sign (rand-int u/x-velocity)) (rand-sign (rand-int u/y-velocity)))]
+        new-velocity (vector-2 (rand-sign (rand-int u/enemy-x-velocity)) (rand-sign (rand-int u/enemy-y-velocity)))]
     (body! enemy-entity
            :set-linear-velocity (vector-2! current-velocity :add new-velocity))
     enemy-entity))
@@ -130,9 +130,9 @@
         z-side (direction (rand-int 3))
         [x y x-velocity y-velocity]
         (condp = z-side
-          :right [(+ x-max width) (rand-int y-max) (- u/x-velocity) u/y-velocity]
-          :bottom [(rand-int x-max) (- height) u/x-velocity u/y-velocity]
-          :left [(- width) (rand-int y-max) u/x-velocity u/y-velocity])]
+          :right [(+ x-max width) (rand-int y-max) (- u/cell-x-velocity) 0]
+          :bottom [(rand-int x-max) (- height) 0 u/cell-y-velocity]
+          :left [(- width) (rand-int y-max) u/cell-x-velocity 0])]
     (doto
         (assoc enemy
           :body (create-enemy-body! screen (/ width 2))
@@ -164,3 +164,10 @@
     (some (fn [[map-life map-level]]
             (when (< life map-life) map-level))
           mapping)))
+
+(defn may-spawn-enemy [{:keys [last-spawn total-time] :as screen} entities]
+  (println last-spawn (int total-time))
+  (if (and (not= last-spawn (int total-time))
+           (= 0 (mod (int total-time) 2)))
+    [(play-clj.core/update! screen :last-spawn (int total-time)) (conj entities (spawn-enemy screen))]
+    [screen entities]))
