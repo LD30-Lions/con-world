@@ -1,0 +1,87 @@
+tonalite1 = (9, 11, 12, 14, 16, 17, 19, 21)
+tonalite2 = (4, 6, 7, 9, 11, 12, 14, 16)
+tonalite3 = (11, 13, 14, 16, 18, 19, 21, 23)
+tonalite4 = (6, 8, 9, 11, 13, 14, 16, 18)
+tonalite5 = (1, 3, 4, 6, 8, 9, 11, 13)
+
+if stade_joueur == 1:
+	tonalite = tonalite1
+elif stade_joueur == 2:
+	tonalite = tonalite2
+elif stade_joueur == 3:
+	tonalite = tonalite3
+elif stade_joueur == 4:
+	tonalite = tonalite4
+elif stade_joueur == 5:
+	tonalite = tonalite5
+
+
+
+###################### INTERACTIONS ###############################
+
+
+##### ENNEMIS 
+
+if [un ennemi entre à l'écran] :
+	random1 = random(1:8)
+	note1 = tonalite[random]
+        play sound "/sound/apparitions/%note1.wav"
+
+if [le joueur mange un ennemi] :
+	note2 = random(1:5)
+        play sound "/sound/bouffe/%stade_joueur/%note2.wav"
+
+if [le joueur se fait toucher par un ennemi] :
+	random3 = random(1:8)
+	play sound "/sound/ouille/%random.wav"
+
+
+##### PLANTE
+
+if [on nourrit la plante] :
+	play sound "/sound/fleur/%stade_joueur.wav"
+
+
+##### CHANGEMENT STADE JOUEUR
+
+if [changement stade] :
+	stade_joueur = [nouveau stade]
+	play sound "/sound/changement/%stade_joueur.wav"
+
+
+###################### AMBIANCE ###############################
+
+
+toutes les 3 secondes :
+	random = random(1:2)
+	if random ==1:
+		random = random(1:8)
+		note = tonalite[random]
+		play sound "/sound/ambiance/%note.wav"
+	else:
+		none
+
+while [score plante > pallier1]:
+	toutes les 4 secondes :
+		random = random(1:2)
+		if random ==1:
+			random = random(1:7)
+			play sound "/sound/ambiance2/%random.wav"
+		else:
+			none
+
+while [score plante > pallier2]:
+	toutes les 5 secondes :
+		play sound "/sound/ambiance3/%stade_joueur.wav"
+
+
+while [score plante > pallier3]:
+	toutes les 3,5 secondes :
+		random = random(1:2)
+		if random ==1:
+			random = random(1:5)
+			play sound "/sound/ambiance4/%stade_joueur/%random.wav"
+		else:
+			none
+
+
