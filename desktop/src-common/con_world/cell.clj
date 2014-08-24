@@ -188,12 +188,18 @@
 
 (defn create-plante-zone!
   [screen]
-  (let [zone (texture "plante-zone.png")
-        width (u/pixels->world (texture! zone :get-region-width))
-        height (u/pixels->world (texture! zone :get-region-height))]
-    (assoc zone
+  (let [sheet (texture "entities/racines.png")
+        tiles (texture! sheet :split 130 130)
+        plante-images (for [col [0 1 2 3]]
+                        (texture (aget tiles 0 col)))
+        stand (first plante-images)
+        width (u/pixels->world (texture! stand :get-region-width))
+        height (u/pixels->world (texture! stand :get-region-height))]
+    (assoc stand
+      :stand stand
+      :move (animation 0.1 plante-images :set-play-mode (play-mode :loop-pingpong))
       :body (doto (create-rect-body! screen width height)
-              (body-position! (/ u/z-width 2) (- u/z-height height) 0))
+              (body-position! (- (/ u/z-width 2) (/ width 2)) (- u/z-height height) 0))
       :width width :height height
       :plante-zone? true)))
 
@@ -212,10 +218,14 @@
       [(play-clj.core/update! screen :last-spawn (int total-time)) (conj entities (spawn-enemy screen))])
     [screen entities]))
 
-(defn animate [screen entities]
+(defn animate-cell [screen entities]
   (let [player (find-cell entities)
         velocity (body! player :get-linear-velocity)
         not-moving (vector-2! velocity :is-zero 1)]
     (if not-moving
       (replace {player (merge player (:stand player))} entities)
       (replace {player (merge player (animation->texture screen (:walk player)))} entities))))
+
+(defn animate-plante [screen entities]
+  (let [plante (find-plante-zone entities)]
+    (replace {plante (merge plante (animation->texture screen (:move plante)))} entities)))

@@ -61,7 +61,8 @@
                  (->> entities
                       (step! screen)
                       cell/change-cell-level
-                      (cell/animate screen)
+                      (cell/animate-cell screen)
+                      (cell/animate-plante screen)
                       (map cell/set-enemy-in-zone)
                       (map cell/move-enemy)
                       (render! screen)))))
