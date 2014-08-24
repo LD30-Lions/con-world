@@ -165,8 +165,9 @@
    5 [135 3]
    6 [170 3]})
 
-(defn spawn-enemy [screen]
-  (let [index (+ 1 (rand-int 6))
+(defn spawn-enemy [screen entities]
+  (let [{:keys [level] :as player} (find-cell entities)
+         index (+ level 1 (rand-sign 1))
         sheet (u/memo-texture (str "entities/ennemi" index ".png"))
         _ (println "------------- SHEET")
         _ (println sheet)
@@ -235,7 +236,7 @@
     (do
       (println "spawn!")
       (spawn-enemy-sound (find-cell entities))
-      [(play-clj.core/update! screen :last-spawn (int total-time)) (conj entities (spawn-enemy screen))])
+      [(play-clj.core/update! screen :last-spawn (int total-time)) (conj entities (spawn-enemy screen entities))])
     [screen entities]))
 
 (defn animate-cell [screen entities]
