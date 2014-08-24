@@ -68,9 +68,7 @@
   (if (and (not in-zone?) enemy?)
     (let [r (rectangle 0 0 u/w-width u/w-height)]
       (if (in-rectangle? entity r)
-        (do
-          (println "in zone")
-          (assoc entity :in-zone? true))
+        (assoc entity :in-zone? true)
         entity))
     entity))
 
@@ -179,7 +177,6 @@
           mapping)))
 
 (defn may-spawn-enemy [{:keys [last-spawn total-time] :as screen} entities]
-  #_(println last-spawn (int total-time))
   (if (and (not= last-spawn (int total-time))
            (= 0 (mod (int total-time) 2)))
     (do

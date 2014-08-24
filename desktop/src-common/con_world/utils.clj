@@ -16,11 +16,13 @@
 (def z-width w-width)
 (def z-height (- w-height (pixels->world 290)))
 
-(def cell-x-velocity 25)
-(def cell-y-velocity 25)
+(def cell-x-velocity 10)
+(def cell-y-velocity 10)
+
 
 (def enemy-x-velocity 15)
 (def enemy-y-velocity 15)
+
 
 (def moving-slow 1)
 
