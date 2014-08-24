@@ -63,6 +63,7 @@
                       cell/change-cell-level
                       (cell/animate-cell screen)
                       (cell/animate-plante screen)
+                      (cell/animate-enemies screen)
                       (map cell/set-enemy-in-zone)
                       (map cell/move-enemy)
                       (render! screen)))))

@@ -157,11 +157,29 @@
   (let [sound-path (str "sound/changement/" level ".wav")]
       (play-sound sound-path)))
 
+(def enemy-index
+  {1 [25 3]
+   2 [50 3]
+   3 [75 3]
+   4 [105 3]
+   5 [135 3]
+   6 [170 3]})
 
 (defn spawn-enemy [screen]
-  (let [enemy (u/memo-texture (str "enemy" (+ 1 (rand-int 3)) ".png"))
-        width (u/pixels->world (texture! enemy :get-region-width))
-        height (u/pixels->world (texture! enemy :get-region-height))
+  (let [index (+ 1 (rand-int 6))
+        sheet (u/memo-texture (str "entities/ennemi" index ".png"))
+        _ (println "------------- SHEET")
+        _ (println sheet)
+        _ (println "-------------")
+        tiles (texture! sheet :split (first (enemy-index index)) (first (enemy-index index)))
+        _ (println "------------- SHEET")
+        _ (println tiles)
+        en-images (for [col (range (second (enemy-index index)))]
+                    (texture (aget tiles 0 col)))
+        _ (println en-images)
+        stand (first en-images)
+        width (u/pixels->world (texture! stand :get-region-width))
+        height (u/pixels->world (texture! stand :get-region-height))
         x-max (- u/z-width width)
         y-max (- u/z-height height)
         z-side (directions (rand-int 3))
@@ -172,7 +190,9 @@
           :left [0 (rand-int y-max) u/cell-x-velocity 0])]
     (println x y x-velocity y-velocity z-side)
     (doto
-        (assoc enemy
+        (assoc stand
+          :stand stand
+          :walk (animation 0.1 en-images :set-play-mode (play-mode :loop-pingpong))
           :body (create-enemy-body! screen (/ width 2))
           :width width :height height
           :enemy? true
@@ -225,6 +245,17 @@
     (if not-moving
       (replace {player (merge player (:stand player))} entities)
       (replace {player (merge player (animation->texture screen (:walk player)))} entities))))
+
+(defn animate-enemies [screen entities]
+  (map (fn [entity]
+         (if (:enemy? entity)
+           (let [velocity (body! entity :get-linear-velocity)
+                 not-moving (vector-2! velocity :is-zero 1)]
+             (if not-moving
+               (merge entity (:stand entity))
+               (merge entity (animation->texture screen (:walk entity)))))
+           entity))
+    entities))
 
 (defn animate-plante [screen entities]
   (let [plante (find-plante-zone entities)]
