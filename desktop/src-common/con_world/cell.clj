@@ -166,7 +166,7 @@
           mapping)))
 
 (defn may-spawn-enemy [{:keys [last-spawn total-time] :as screen} entities]
-  (println last-spawn (int total-time))
+  #_(println last-spawn (int total-time))
   (if (and (not= last-spawn (int total-time))
            (= 0 (mod (int total-time) 2)))
     [(play-clj.core/update! screen :last-spawn (int total-time)) (conj entities (spawn-enemy screen))]

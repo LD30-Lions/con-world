@@ -26,7 +26,7 @@
              (let [ camera (orthographic)
                     screen (update! screen
                                    :camera camera
-                                   :renderer (stage :set-viewport (FitViewport. u/w-width u/w-height camera))
+                                   :renderer (stage :set-viewport (FitViewport. u/res-width u/res-height camera))
                                    :world (box-2d 0 0)
                                    :last-spawn 0)
                    player (cell/create-cell-entity! screen)
