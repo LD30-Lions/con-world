@@ -10,7 +10,7 @@
             [con-world.cell :as cell]
             [con-world.utils :as u]))
 
-(declare main-screen con-world intro-screen game-over-screen)
+(declare main-screen con-world intro-screen game-over-screen score-screen)
 
 
 
@@ -38,11 +38,7 @@
                 (doto player
                   (body-position! 0 0 0)
                   (body! :set-linear-velocity 0 0))
-                #_(assoc (label (str (:life player))
-                              (color :white)
-                              :set-width 30)
-                  :y (- u/w-height 16)
-                  :score? true)]))
+                ]))
 
            :on-render
            (fn [screen entities]
@@ -85,8 +81,7 @@
            (fn [screen entities]
              (let [coliding-entities [(first-entity screen entities) (second-entity screen entities)]
                    {p-width :width :as player} (cell/find-cell coliding-entities)
-                   {e-width :width :as enemy} (cell/find-enemy coliding-entities)
-                   score (cell/find-score entities)]
+                   {e-width :width :as enemy} (cell/find-enemy coliding-entities)]
                (if (and player enemy)
                  (if (< p-width e-width)
                    (let [new-life (- (:life player) 5)
@@ -97,15 +92,12 @@
                                      20 4
                                      25 5
                                      (:level player))]
-                     (->> entities
-                          (replace {player (assoc player :life new-life :level new-level)})
-                          #_(replace {score (doto score
-                                            (label! :set-text (str new-life)))})))
+                     (run! score-screen :update-score :score new-life)
+                     (replace {player (assoc player :life new-life :level new-level)} entities))
                    (let [new-life (inc (:life player))]
+                     (run! score-screen :update-score :score new-life)
                      (->> entities
                           (remove #(= % enemy))
-                          #_(replace {score (doto score
-                                            (label! :set-text (str new-life)))})
                           (replace {player (assoc player :life new-life)}))))
                  entities)))
 
@@ -118,6 +110,7 @@
                               (.getWorldManifold)
                               (.getNormal))
                    disable-contact (and (not in-zone?)
+                                        #_(cell/in-rectangle? enemy (rectangle 0 0 u/z-width u/z-height))
                                         (or
                                           (and (= z-side :right) (= normal (vector-2 1.0 0.0)))
                                           (and (= z-side :bottom) (= normal (vector-2 0.0 -1.0)))
@@ -129,10 +122,31 @@
 
            :on-timer
            (fn [screen entities]
-             (println "\n------ O N  T I M E R ------------\n")
              (if (= :spawn-enemy (:id screen))
                (conj entities (cell/spawn-enemy screen))
                entities)))
+
+(defscreen score-screen
+           :on-show
+           (fn [screen _]
+             (update! screen :renderer (stage) :camera (orthographic))
+             (assoc (label "" (color :white))
+               :y (- u/w-height 16)
+               :score? true))
+
+           :on-render
+           (fn [screen entities]
+             (render! screen entities))
+
+           :update-score
+           (fn [{:keys [score]} entities]
+             (let [score-label (cell/find-score entities)]
+               (replace {score-label (doto score-label (label! :set-text (str score)))} entities)))
+
+           :on-resize
+           (fn [screen entities]
+             (size! screen (game :width) (game :height))
+             entities))
 
 (defscreen intro-screen
            :on-show
@@ -147,7 +161,7 @@
 
            :on-key-down
            (fn [_ entities]
-             (set-screen! con-world main-screen)
+             (set-screen! con-world main-screen score-screen)
              entities)
 
            :on-resize
@@ -168,7 +182,7 @@
 
            :on-key-down
            (fn [_ entities]
-             (set-screen! con-world main-screen)
+             (set-screen! con-world main-screen score-screen)
              entities)
 
            :on-resize
