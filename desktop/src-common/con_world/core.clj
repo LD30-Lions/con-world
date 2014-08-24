@@ -13,7 +13,8 @@
 
 (declare main-screen con-world intro-screen game-over-screen score-screen main-bg-screen)
 
-
+(load "wall")
+(load "player")
 
 (defn game-over? [entities]
   (-> (cell/find-cell entities)
@@ -38,18 +39,13 @@
                                    :world (box-2d 0 0)
                                    :last-spawn 0
                                    :music (u/memo-sound "sound/fond.mp3"))
-                   player (cell/create-cell-entity! screen)
-                   wall (doto {:body  (cell/create-rect-body! screen u/w-width u/z-height)
-                               :wall? true}
-                          (body-position! 0 0 0))]
+                   player (create-cell-entity! screen)
+                   wall (create-wall-entity screen)]
                (add-timer! screen :ambiant-sound 3 3)
                (sound! (:music screen) :loop)
                [wall
                 (cell/create-plante-zone! screen)
-                (doto player
-                  (body-position! 0 0 0)
-                  (body! :set-linear-velocity 0 0))
-                ]))
+                (set-player-initial-settings player)]))
 
            :on-render
            (fn [screen entities]
@@ -285,3 +281,4 @@
            (set-screen! this intro-screen)))
 
 (load "debug")
+
