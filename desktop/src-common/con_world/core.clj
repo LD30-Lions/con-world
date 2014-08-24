@@ -25,15 +25,15 @@
              (let [screen (update! screen
                                    :camera (orthographic)
                                    :renderer (stage)
-                                   :world (box-2d 0 0))
+                                   :world (box-2d 0 0)
+                                   :last-spawn 0)
 
                    player (cell/create-cell-entity! screen)
                    wall (doto {:body  (cell/create-rect-body! screen u/w-width u/z-height)
                                :wall? true}
                           (body-position! 0 0 0))]
                (size! screen u/w-width u/w-height)
-               (add-timer! screen :spawn-enemy 1 2)
-               (println "on-show")
+               #_(add-timer! screen :spawn-enemy 1 2)
                [wall
                 (cell/create-plante-zone! screen)
                 (doto player
@@ -43,15 +43,16 @@
 
            :on-render
            (fn [screen entities]
-             (clear!)
-             (if (game-over? entities)
-               (set-screen! con-world game-over-screen)
-               (->> entities
-                    (step! screen)
-                    cell/change-cell-level
-                    (map cell/set-enemy-in-zone)
-                    (map cell/move-enemy)
-                    (render! screen))))
+             (let [[screen entities] (cell/may-spawn-enemy screen entities)]
+               (clear!)
+               (if (game-over? entities)
+                 (set-screen! con-world game-over-screen)
+                 (->> entities
+                      (step! screen)
+                      cell/change-cell-level
+                      (map cell/set-enemy-in-zone)
+                      (map cell/move-enemy)
+                      (render! screen)))))
 
            :on-key-down
            (fn [screen entities]
@@ -121,8 +122,8 @@
                  (.setEnabled contact false))
                entities))
 
-           :on-timer
-           (fn [screen entities]
+           #_:on-timer
+           #_(fn [screen entities]
              (println "timer")
              (if (= :spawn-enemy (:id screen))
                (conj entities (cell/spawn-enemy screen))
