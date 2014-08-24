@@ -193,6 +193,11 @@
              (update! screen :kill-screen? true)
              entities)
 
+           :on-touch-down
+           (fn [screen entities]
+             (update! screen :kill-screen? true)
+             entities)
+
            :on-resize
            (fn [screen entities]
              (size! screen (screen :bg-width) (screen :bg-height))
@@ -208,6 +213,11 @@
            (fn [screen entities]
              (clear! 0 0 0 1)
              (render! screen entities))
+
+           :on-key-down
+           (fn [_ entities]
+             (set-screen! con-world main-screen score-screen)
+             entities)
 
            :on-key-down
            (fn [_ entities]
