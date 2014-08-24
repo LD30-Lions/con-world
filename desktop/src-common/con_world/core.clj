@@ -9,7 +9,7 @@
             [con-world.cell :as cell]
             [con-world.utils :as u]))
 
-(declare main-screen con-world)
+(declare main-screen con-world intro-screen game-over-screen)
 
 (defn in-rectangle? [{:keys [x y width height]} r]
   (and (rectangle! r :contains x y) (rectangle! r :contains (+ x width) (+ y height))))
@@ -23,6 +23,11 @@
           (assoc entity :in-zone? true))
         entity))
     entity))
+
+(defn game-over? [entities]
+  (-> (cell/find-cell entities)
+      :life
+      (<= 0)))
 
 (defscreen main-screen
            :on-show
@@ -51,10 +56,12 @@
            :on-render
            (fn [screen entities]
              (clear!)
-             (->> entities
-                  (step! screen)
-                  (map set-enemy-in-zone)
-                  (render! screen)))
+             (if (game-over? entities)
+               (set-screen! con-world game-over-screen)
+               (->> entities
+                    (step! screen)
+                    (map set-enemy-in-zone)
+                    (render! screen))))
 
            :on-key-down
            (fn [screen entities]
@@ -120,7 +127,49 @@
                  (.setEnabled contact false))
                entities)))
 
+(defscreen intro-screen
+           :on-show
+           (fn [screen _]
+             (update! screen :renderer (stage) :camera (orthographic))
+             (label "Tu veux jouer avec des spores et des arbres ?" (color :green)))
+
+           :on-render
+           (fn [screen entities]
+             (clear! 0 0 0 1)
+             (render! screen entities))
+
+           :on-key-down
+           (fn [_ entities]
+             (set-screen! con-world main-screen)
+             entities)
+
+           :on-resize
+           (fn [screen entities]
+             (size! screen (game :width) (game :height))
+             entities))
+
+(defscreen game-over-screen
+           :on-show
+           (fn [screen _]
+             (update! screen :renderer (stage) :camera (orthographic))
+             (label "Game over" (color :red)))
+
+           :on-render
+           (fn [screen entities]
+             (clear! 0 0 0 1)
+             (render! screen entities))
+
+           :on-key-down
+           (fn [_ entities]
+             (set-screen! con-world main-screen)
+             entities)
+
+           :on-resize
+           (fn [screen entities]
+             (size! screen (game :width) (game :height))
+             entities))
+
 (defgame con-world
          :on-create
          (fn [this]
-           (set-screen! this main-screen)))
+           (set-screen! this intro-screen)))
