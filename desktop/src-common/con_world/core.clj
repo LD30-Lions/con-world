@@ -163,25 +163,39 @@
              (size! screen (game :width) (game :height))
              entities))
 
+(defn intro-screen-background []
+  (u/memo-texture "intro-screen-background.png"))
+
 (defscreen intro-screen
            :on-show
            (fn [screen _]
-             (update! screen :renderer (stage) :camera (orthographic))
-             (label "Tu veux jouer avec des spores et des arbres ?" (color :green)))
+             (let [background (intro-screen-background)
+                   music (u/memo-sound "intro-screen-music.mp3")]
+               (update! screen :renderer (stage) :camera (orthographic)
+                        :bg-width (texture! background :get-region-width)
+                        :bg-height (texture! background :get-region-height)
+                        :music music)
+               (sound! music :loop)
+               [background
+                (label "Tu veux jouer avec des spores et des arbres ?" (color :green))]))
 
            :on-render
-           (fn [screen entities]
-             (clear! 0 0 0 1)
-             (render! screen entities))
+           (fn [{:keys [music kill-screen?] :as screen} entities]
+             (if kill-screen?
+               (do
+                 (set-screen! con-world main-screen score-screen)
+                 (sound! music :stop))
+               (do (clear! 0 0 0 1)
+                   (render! screen entities))))
 
            :on-key-down
-           (fn [_ entities]
-             (set-screen! con-world main-screen score-screen)
+           (fn [screen entities]
+             (update! screen :kill-screen? true)
              entities)
 
            :on-resize
            (fn [screen entities]
-             (size! screen (game :width) (game :height))
+             (size! screen (screen :bg-width) (screen :bg-height))
              entities))
 
 (defscreen game-over-screen

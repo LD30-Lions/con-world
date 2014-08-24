@@ -22,3 +22,5 @@
 (def moving-slow 1)
 
 (def memo-texture (memoize (fn [name] (texture name))))
+
+(def memo-sound (memoize (fn [name] (sound name))))
