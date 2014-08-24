@@ -5,6 +5,7 @@
                        (try (screen-fn)
                          (catch Exception e
                            (.printStackTrace e)
+                           (show-entities)
                            (Thread/sleep 7777)
                            (set-screen! con-world main-screen)))))
                            
@@ -13,6 +14,4 @@
 (in-ns 'con-world.core)
 (on-gl (set-screen! con-world main-screen))
 
-(defn show-entities []
-  (-> main-screen :entities deref clojure.pprint/pprint))
 ~~~

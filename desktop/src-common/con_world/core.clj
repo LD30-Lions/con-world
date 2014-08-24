@@ -1,7 +1,8 @@
 (ns con-world.core
   (:import (com.badlogic.gdx.physics.box2d Contact WorldManifold)
            (com.badlogic.gdx.math Vector2))
-  (:require [play-clj.core :refer :all]
+  (:require [clojure.pprint :refer [pprint]]
+            [play-clj.core :refer :all]
             [play-clj.g2d :refer :all]
             [play-clj.math :refer :all]
             [play-clj.ui :refer :all]
@@ -31,16 +32,17 @@
                                :wall? true}
                           (body-position! 0 0 0))]
                (size! screen u/w-width u/w-height)
+               (add-timer! screen :spawn-enemy 5 3)
+               (println "on-show")
                [wall
                 (doto player
                   (body-position! 0 0 0)
                   (body! :set-linear-velocity 0 0))
-                (cell/spawn-enemy screen)
-                (assoc (label (str (:life player))
+                #_(assoc (label (str (:life player))
                               (color :white)
                               :set-width 30)
-                    :y (- u/w-height 16)
-                    :score? true)]))
+                  :y (- u/w-height 16)
+                  :score? true)]))
 
            :on-render
            (fn [screen entities]
@@ -97,12 +99,12 @@
                                      (:level player))]
                      (->> entities
                           (replace {player (assoc player :life new-life :level new-level)})
-                          (replace {score (doto score
+                          #_(replace {score (doto score
                                             (label! :set-text (str new-life)))})))
                    (let [new-life (inc (:life player))]
                      (->> entities
                           (remove #(= % enemy))
-                          (replace {score (doto score
+                          #_(replace {score (doto score
                                             (label! :set-text (str new-life)))})
                           (replace {player (assoc player :life new-life)}))))
                  entities)))
@@ -110,8 +112,8 @@
            :on-pre-solve
            (fn [{:keys [^Contact contact] :as screen} entities]
              (let [coliding-entities [(first-entity screen entities) (second-entity screen entities)]
-                   {:keys [z-side in-zone?] :as enemy} (first (filter :enemy? coliding-entities))
-                   wall (first (filter :wall? coliding-entities))
+                   {:keys [z-side in-zone?] :as enemy} (cell/find-enemy coliding-entities)
+                   wall (cell/find-wall coliding-entities)
                    normal (-> contact
                               (.getWorldManifold)
                               (.getNormal))
@@ -123,6 +125,13 @@
                                           ))]
                (when (and enemy wall disable-contact disable-contact)
                  (.setEnabled contact false))
+               entities))
+
+           :on-timer
+           (fn [screen entities]
+             (println "\n------ O N  T I M E R ------------\n")
+             (if (= :spawn-enemy (:id screen))
+               (conj entities (cell/spawn-enemy screen))
                entities)))
 
 (defscreen intro-screen
@@ -171,3 +180,5 @@
          :on-create
          (fn [this]
            (set-screen! this intro-screen)))
+
+(load "debug")
