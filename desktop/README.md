@@ -12,4 +12,7 @@
 
 (in-ns 'con-world.core)
 (on-gl (set-screen! con-world main-screen))
+
+(defn show-entities []
+  (-> main-screen :entities deref clojure.pprint/pprint))
 ~~~
