@@ -24,28 +24,35 @@
 (defn stage-fit-vp [camera]
   (stage :set-viewport (FitViewport. u/res-width u/res-height camera)))
 
+(defn init-graphic-settings [screen]
+  (let [camera (orthographic)]
+    (update! screen
+             :camera camera
+             :renderer (stage-fit-vp camera))))
+
+
 (defn on-key-move-cell [entities direction]
   (cell/cell-move-sound)
   (replace {(cell/find-cell entities)
-                            (cell/move-cell entities direction)}
-                          entities))
+             (cell/move-cell entities direction)}
+           entities))
+
 (defscreen main-screen
            :on-show
            (fn [screen _]
-             (let [camera (orthographic)
-                   screen (update! screen
-                                   :camera camera
-                                   :renderer (stage-fit-vp camera)
-                                   :world (box-2d 0 0)
-                                   :last-spawn 0
-                                   :music (u/memo-sound "sound/fond.mp3"))
-                   player (create-cell-entity! screen)
-                   wall (create-wall-entity screen)]
+
+             (let [screen (-> (init-graphic-settings screen)
+                              (update!
+                                :world (box-2d 0 0)
+                                :music (u/memo-sound "sound/fond.mp3")
+                                :last-spawn 0))]
+
                (add-timer! screen :ambiant-sound 3 3)
                (sound! (:music screen) :loop)
-               [wall
+
+               [(create-wall-entity screen)
                 (cell/create-plante-zone! screen)
-                (set-player-initial-settings player)]))
+                (create-player-entity screen)]))
 
            :on-render
            (fn [screen entities]

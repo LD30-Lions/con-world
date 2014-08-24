@@ -37,3 +37,7 @@
   (-> player-entity
     (move-player 0 0)
     (set-player-velocity 0 0)))
+
+(defn create-player-entity [ screen]
+  (-> (create-cell-entity! screen)
+      (set-player-initial-settings)))
