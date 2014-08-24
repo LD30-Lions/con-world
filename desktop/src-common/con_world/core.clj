@@ -1,6 +1,7 @@
 (ns con-world.core
   (:import (com.badlogic.gdx.physics.box2d Contact WorldManifold)
-           (com.badlogic.gdx.math Vector2))
+           (com.badlogic.gdx.math Vector2)
+           (com.badlogic.gdx.utils.viewport FitViewport))
   (:require [clojure.pprint :refer [pprint]]
             [play-clj.core :refer :all]
             [play-clj.g2d :refer :all]
@@ -10,7 +11,7 @@
             [con-world.cell :as cell]
             [con-world.utils :as u]))
 
-(declare main-screen con-world intro-screen game-over-screen score-screen)
+(declare main-screen con-world intro-screen game-over-screen score-screen main-bg-screen)
 
 
 
@@ -19,21 +20,22 @@
       :life
       (<= 0)))
 
+(defn stage-fit-vp [camera]
+  (stage :set-viewport (FitViewport. u/res-width u/res-height camera)))
+
 (defscreen main-screen
            :on-show
            (fn [screen _]
-             (let [screen (update! screen
-                                   :camera (orthographic)
-                                   :renderer (stage)
+             (let [camera (orthographic)
+                   screen (update! screen
+                                   :camera camera
+                                   :renderer (stage-fit-vp camera)
                                    :world (box-2d 0 0)
                                    :last-spawn 0)
-
                    player (cell/create-cell-entity! screen)
                    wall (doto {:body  (cell/create-rect-body! screen u/w-width u/z-height)
                                :wall? true}
                           (body-position! 0 0 0))]
-               (size! screen u/w-width u/w-height)
-               #_(add-timer! screen :spawn-enemy 1 2)
                [wall
                 (cell/create-plante-zone! screen)
                 (doto player
@@ -129,6 +131,26 @@
                (conj entities (cell/spawn-enemy screen))
                entities)))
 
+
+(defscreen main-bg-screen
+           :on-show
+           (fn [screen _]
+             (let [camera (orthographic)]
+               (update! screen
+                        :camera camera
+                        :renderer (stage-fit-vp camera))
+               (u/memo-texture "main-screen-background-1.png")))
+
+           :on-render
+           (fn [screen entities]
+             #_(println entities)
+             (clear! 0 1 0 1)
+             (render! screen entities))
+
+           :on-resize
+           (fn [screen _]
+             (size! screen u/w-width u/w-height)))
+
 (defscreen score-screen
            :on-show
            (fn [screen _]
@@ -166,12 +188,18 @@
 (defn intro-screen-background []
   (u/memo-texture "intro-screen-background.png"))
 
+(defn start-main-screens []
+  (set-screen! con-world main-screen score-screen main-bg-screen))
+
 (defscreen intro-screen
            :on-show
            (fn [screen _]
              (let [background (intro-screen-background)
-                   music (u/memo-sound "intro-screen-music.mp3")]
-               (update! screen :renderer (stage) :camera (orthographic)
+                   music (u/memo-sound "intro-screen-music.mp3")
+                   camera (orthographic)]
+               (update! screen
+                        :renderer (stage-fit-vp camera)
+                        :camera camera
                         :bg-width (texture! background :get-region-width)
                         :bg-height (texture! background :get-region-height)
                         :music music)
@@ -183,7 +211,8 @@
            (fn [{:keys [music kill-screen?] :as screen} entities]
              (if kill-screen?
                (do
-                 (set-screen! con-world main-screen score-screen)
+                 (update! screen :kill-screen? false)
+                 (start-main-screens)
                  (sound! music :stop))
                (do (clear! 0 0 0 1)
                    (render! screen entities))))
@@ -216,7 +245,7 @@
 
            :on-key-down
            (fn [_ entities]
-             (set-screen! con-world main-screen score-screen)
+             (start-main-screens)
              entities)
 
            :on-key-down
