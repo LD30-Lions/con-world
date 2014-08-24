@@ -88,17 +88,25 @@
                    {e-width :width :as enemy} (cell/find-enemy coliding-entities)]
                (if (and player enemy)
                  (if (< p-width e-width)
-                   (let [new-life (- (:life player) 5)]
+                   (let [new-life (- (:life player) 5)
+                         new-level (cell/calculate-level player)
+                         new-level? (not= new-level (:level player))]
+                     (cell/touched-by-enemy-sound)
+                     (when new-level? (cell/changed-level-sound player))
                      (run! score-screen :update-score :score new-life)
-                     (run! score-screen :update-level :level (cell/calculate-level player))
-                     (replace {player (assoc player :life new-life :level (cell/calculate-level player))} entities))
-                   (let [new-life (inc (:life player))]
-                     (println "new-life" new-life "new-level" (cell/calculate-level player))
-                     (run! score-screen :update-level :level (cell/calculate-level player))
+                     (run! score-screen :update-level :level new-level)
+                     (replace {player (assoc player :life new-life :level new-level)} entities))
+                   (let [new-life (inc (:life player))
+                         new-level (cell/calculate-level player)
+                         new-level? (not= new-level (:level player))]
+                     (println "new-life" new-life "new-level" new-level)
+                     (cell/kill-enemy-sound player)
+                     (when new-level? (cell/changed-level-sound player))
+                     (run! score-screen :update-level :level new-level)
                      (run! score-screen :update-score :score new-life)
                      (->> entities
                           (remove #(= % enemy))
-                          (replace {player (assoc player :life new-life)}))))
+                          (replace {player (assoc player :life new-life :level new-level)}))))
                  entities)))
 
            :on-pre-solve

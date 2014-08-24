@@ -125,10 +125,24 @@
                 4 [6, 8, 9, 11, 13, 14, 16, 18]
                 5 [1, 3, 4, 6, 8, 9, 11, 13]})
 
+(defn play-sound [sound-path]
+  (pcore/sound! (u/memo-sound sound-path) :play))
+
 (defn spawn-enemy-sound [{:keys [level]}]
-  (println level)
   (let [sound-path (str "sound/apparitions/" (nth (tonalites level) (rand 8)) ".wav")]
-    (pcore/sound! (u/memo-sound sound-path) :play)))
+    (play-sound sound-path)))
+
+(defn kill-enemy-sound [{:keys [level]}]
+  (let [sound-path (str "sound/bouffe/" level "/" (inc (rand-int 5)) ".wav")]
+    (play-sound sound-path)))
+
+(defn touched-by-enemy-sound []
+  (let [sound-path (str "sound/ouille/" (inc (rand-int 8)) ".wav")]
+      (play-sound sound-path)))
+
+(defn changed-level-sound [{:keys [level]}]
+  (let [sound-path (str "sound/changement/" level ".wav")]
+      (play-sound sound-path)))
 
 
 (defn spawn-enemy [screen]
