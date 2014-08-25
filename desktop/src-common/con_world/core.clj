@@ -14,10 +14,10 @@
 (declare main-screen con-world intro-screen game-over-screen score-screen main-bg-screen)
 
 (load "sound")
-(load "wall")
-(load "player")
-(load "enemy")
-(load "plante")
+(load "entity-wall")
+(load "entity-player")
+(load "entity-enemy")
+(load "entity-plante")
 
 (defn stage-fit-vp [camera]
   (stage :set-viewport (FitViewport. u/res-width u/res-height camera)))
