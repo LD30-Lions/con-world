@@ -30,3 +30,5 @@
 
 (def memo-sound (memoize (fn [name] (sound name))))
 
+(defn rand-sign [x]
+  (if (even? (rand-int 2)) (* -1 x) (* 1 x)))

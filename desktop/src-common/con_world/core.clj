@@ -15,6 +15,7 @@
 
 (load "wall")
 (load "player")
+(load "enemy")
 
 (defn stage-fit-vp [camera]
   (stage :set-viewport (FitViewport. u/res-width u/res-height camera)))
@@ -125,7 +126,7 @@
                       (cell/animate-plante screen)
                       (cell/animate-enemies screen)
                       (map cell/set-enemy-in-zone)
-                      (map cell/move-enemy)
+                      (map move-enemy)
                       (render! screen)))))
 
            :on-key-down

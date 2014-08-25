@@ -9,28 +9,6 @@
 
 
 
-
-(defn rand-sign [x]
-  (if (even? (rand-int 2)) (* -1 x) (* 1 x)))
-
-(defn change-enemy-velocity [enemy-entity]
-  (let [current-velocity (body! enemy-entity :get-linear-velocity)
-        new-velocity (vector-2 (rand-sign (rand-int u/enemy-x-velocity)) (rand-sign (rand-int u/enemy-y-velocity)))]
-    (body! enemy-entity
-           :set-linear-velocity (vector-2! current-velocity :add new-velocity))
-    enemy-entity))
-
-(defn moving-fast? [entity]
-  (let [^Vector2 vec2-velocity (body! entity :get-linear-velocity)
-        x-velocity (.x vec2-velocity)
-        y-velocity (.y vec2-velocity)]
-    (or (> x-velocity u/moving-slow) (> y-velocity u/moving-slow))))
-
-(defn move-enemy [{:keys [enemy? in-zone?] :as entity}]
-  (if (and enemy? in-zone? (not (moving-fast? entity)))
-    (change-enemy-velocity entity)
-    entity))
-
 (defn in-rectangle? [{:keys [x y width height]} r]
   (and (rectangle! r :contains x y) (rectangle! r :contains (+ x width) (+ y height))))
 
@@ -126,7 +104,7 @@
 
 (defn spawn-enemy [screen entities]
   (let [{:keys [level]} (find-cell entities)
-         index (+ level 1 (rand-sign 1))
+         index (+ level 1 (u/rand-sign 1))
         sheet (u/memo-texture (str "entities/ennemi" index ".png"))
         tiles (texture! sheet :split (first (enemy-index index)) (first (enemy-index index)))
         en-images (for [col (range (second (enemy-index index)))]
