@@ -46,3 +46,6 @@
   (-> (cell/find-cell player-entity)
       :life
       (<= 0)))
+
+(defn player-win? [{p-width :width} {e-width :width}]
+  (> p-width e-width))

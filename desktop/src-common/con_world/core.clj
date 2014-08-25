@@ -42,7 +42,47 @@
    (key-code :dpad-left)  :left,
    (key-code :dpad-right) :right})
 
+(defn coliding-entities [screen entities]
+  (let [coliding-entities [(first-entity screen entities) (second-entity screen entities)]]
+    {:enemy       (cell/find-enemy coliding-entities)
+     :player      (cell/find-cell coliding-entities)
+     :plante-zone (cell/find-plante-zone coliding-entities)
+     :wall        (cell/find-wall coliding-entities)}))
 
+(defn do-player-lose [entities player]
+  (let [new-life (- (:life player) 5)
+        new-level (cell/calculate-level player)
+        new-level? (not= new-level (:level player))]
+    (cell/touched-by-enemy-sound)
+    (when new-level? (cell/changed-level-sound player))
+    (run! score-screen :update-score :score new-life)
+    (run! score-screen :update-level :level new-level)
+    (replace {player (assoc player :life new-life :level new-level)} entities)))
+
+(defn do-player-win [entities player enemy]
+  (let [new-life (inc (:life player))
+        new-level (cell/calculate-level player)
+        new-level? (not= new-level (:level player))]
+    (println "new-life" new-life "new-level" new-level)
+    (cell/kill-enemy-sound player)
+    (when new-level? (cell/changed-level-sound player))
+    (run! score-screen :update-level :level new-level)
+    (run! score-screen :update-score :score new-life)
+    (->> entities
+         (remove #(= % enemy))
+         (replace {player (assoc player :life new-life :level new-level)}))))
+
+(defn disable-contact? [contact {:keys [z-side in-zone?]}]
+  (let [normal (-> contact
+                   (.getWorldManifold)
+                   (.getNormal))]
+    (and (not in-zone?)
+         #_(cell/in-rectangle? enemy (rectangle 0 0 u/z-width u/z-height))
+         (or
+           (and (= z-side :right) (= normal (vector-2 1.0 0.0)))
+           (and (= z-side :bottom) (= normal (vector-2 0.0 -1.0)))
+           (and (= z-side :left) (= normal (vector-2 -1.0 0.0)))
+           ))))
 (defscreen main-screen
 
            :on-show
@@ -94,50 +134,18 @@
 
            :on-end-contact
            (fn [screen entities]
-             (let [coliding-entities [(first-entity screen entities) (second-entity screen entities)]
-                   {p-width :width :as player} (cell/find-cell coliding-entities)
-                   {e-width :width :as enemy} (cell/find-enemy coliding-entities)]
+             (let [{:keys [player enemy]} (coliding-entities screen entities)]
                (if (and player enemy)
-                 (if (< p-width e-width)
-                   (let [new-life (- (:life player) 5)
-                         new-level (cell/calculate-level player)
-                         new-level? (not= new-level (:level player))]
-                     (cell/touched-by-enemy-sound)
-                     (when new-level? (cell/changed-level-sound player))
-                     (run! score-screen :update-score :score new-life)
-                     (run! score-screen :update-level :level new-level)
-                     (replace {player (assoc player :life new-life :level new-level)} entities))
-                   (let [new-life (inc (:life player))
-                         new-level (cell/calculate-level player)
-                         new-level? (not= new-level (:level player))]
-                     (println "new-life" new-life "new-level" new-level)
-                     (cell/kill-enemy-sound player)
-                     (when new-level? (cell/changed-level-sound player))
-                     (run! score-screen :update-level :level new-level)
-                     (run! score-screen :update-score :score new-life)
-                     (->> entities
-                          (remove #(= % enemy))
-                          (replace {player (assoc player :life new-life :level new-level)}))))
+                 (if (player-win? player enemy)
+                   (do-player-win entities player enemy)
+                   (do-player-lose entities player))
                  entities)))
 
            :on-pre-solve
            (fn [{:keys [^Contact contact] :as screen} entities]
-             (let [coliding-entities [(first-entity screen entities) (second-entity screen entities)]
-                   {:keys [z-side in-zone?] :as enemy} (cell/find-enemy coliding-entities)
-                   wall (cell/find-wall coliding-entities)
-                   plante-zone (cell/find-plante-zone coliding-entities)
-                   player (cell/find-cell coliding-entities)
-                   normal (-> contact
-                              (.getWorldManifold)
-                              (.getNormal))
-                   disable-contact (and (not in-zone?)
-                                        #_(cell/in-rectangle? enemy (rectangle 0 0 u/z-width u/z-height))
-                                        (or
-                                          (and (= z-side :right) (= normal (vector-2 1.0 0.0)))
-                                          (and (= z-side :bottom) (= normal (vector-2 0.0 -1.0)))
-                                          (and (= z-side :left) (= normal (vector-2 -1.0 0.0)))
-                                          ))]
-               (when (and enemy wall disable-contact disable-contact)
+             (let [{:keys [player enemy wall plante-zone]} (coliding-entities screen entities)
+                   disable-contact? (disable-contact? contact enemy)]
+               (when (and enemy wall disable-contact?)
                  (.setEnabled contact false))
                (when (and plante-zone player)
                  (.setEnabled contact false))
