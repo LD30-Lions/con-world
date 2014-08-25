@@ -9,6 +9,7 @@
             [play-clj.ui :refer :all]
             [play-clj.g2d-physics :refer :all]
             [con-world.cell :as cell]
+            [con-world.physics :as phy]
             [con-world.utils :as u]))
 
 (declare main-screen con-world intro-screen game-over-screen score-screen main-bg-screen)

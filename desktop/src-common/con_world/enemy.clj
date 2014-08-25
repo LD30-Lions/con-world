@@ -1,12 +1,15 @@
 (in-ns 'con-world.core)
 
+(defn random-vec2
+  [x-max y-max]
+  {:post [(and (< (.x %) x-max) (> (.x %) (- x-max))
+               (< (.y %) y-max) (> (.y %) (- y-max)))]}
+  (let [added-velocity (map #(-> % rand-int u/rand-sign) [u/enemy-x-velocity u/enemy-y-velocity])]
+    (apply vector-2* added-velocity)))
 
 (defn change-enemy-velocity [enemy-entity]
-  (let [current-velocity (body! enemy-entity :get-linear-velocity)
-        new-velocity (vector-2 (u/rand-sign (rand-int u/enemy-x-velocity)) (u/rand-sign (rand-int u/enemy-y-velocity)))]
-    (body! enemy-entity
-           :set-linear-velocity (vector-2! current-velocity :add new-velocity))
-    enemy-entity))
+  (let [added-velocity (random-vec2 u/enemy-x-velocity u/enemy-y-velocity)]
+    (phy/add-velocity enemy-entity added-velocity)))
 
 (defn moving-fast? [entity]
   (let [^Vector2 vec2-velocity (body! entity :get-linear-velocity)
@@ -14,10 +17,10 @@
         y-velocity (.y vec2-velocity)]
     (or (> x-velocity u/moving-slow) (> y-velocity u/moving-slow))))
 
-(defn move-enemy [{:keys [enemy? in-zone?] :as entity}]
-  (if (and enemy? in-zone? (not (moving-fast? entity)))
-    (change-enemy-velocity entity)
-    entity))
+(defn move-enemy [{:keys [enemy? in-zone?] :as enemy-entity}]
+  (if (and enemy? in-zone? (not (moving-fast? enemy-entity)))
+    (change-enemy-velocity enemy-entity)
+    enemy-entity))
 
 
 
