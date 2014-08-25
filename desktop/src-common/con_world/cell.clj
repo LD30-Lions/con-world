@@ -10,22 +10,8 @@
 
 
 
-
-(def direction->velocity
-  {:up    (vector-2 0 u/cell-y-velocity)
-   :down  (vector-2 0 (- u/cell-y-velocity))
-   :left  (vector-2 (- u/cell-x-velocity) 0)
-   :right (vector-2 u/cell-x-velocity 0)})
-
-(defn change-cell-velocity [cell-entity direction]
-  (let [current-velocity (body! cell-entity :get-linear-velocity)
-        new-velocity (direction direction->velocity)]
-    (body! cell-entity
-           :set-linear-velocity (vector-2! current-velocity :add new-velocity))
-    cell-entity))
-
 (defn rand-sign [x]
-  (if (= 0 (mod (rand-int 2) 2)) (* -1 x) (* 1 x)))
+  (if (even? (rand-int 2)) (* -1 x) (* 1 x)))
 
 (defn change-enemy-velocity [enemy-entity]
   (let [current-velocity (body! enemy-entity :get-linear-velocity)
@@ -55,11 +41,6 @@
         (assoc entity :in-zone? true)
         entity))
     entity))
-
-
-(defn move-cell [entities direction]
-  (let [cell (some #(when (:cell? %) %) entities)]
-    (change-cell-velocity cell direction)))
 
 (defn find-cell [entities]
   (some #(when (:cell? %) %) entities))
@@ -144,18 +125,12 @@
    6 [170 3]})
 
 (defn spawn-enemy [screen entities]
-  (let [{:keys [level] :as player} (find-cell entities)
+  (let [{:keys [level]} (find-cell entities)
          index (+ level 1 (rand-sign 1))
         sheet (u/memo-texture (str "entities/ennemi" index ".png"))
-        _ (println "------------- SHEET")
-        _ (println sheet)
-        _ (println "-------------")
         tiles (texture! sheet :split (first (enemy-index index)) (first (enemy-index index)))
-        _ (println "------------- SHEET")
-        _ (println tiles)
         en-images (for [col (range (second (enemy-index index)))]
                     (texture (aget tiles 0 col)))
-        _ (println en-images)
         stand (first en-images)
         width (u/pixels->world (texture! stand :get-region-width))
         height (u/pixels->world (texture! stand :get-region-height))

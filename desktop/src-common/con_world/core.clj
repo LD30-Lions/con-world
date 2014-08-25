@@ -28,9 +28,9 @@
 
 (defn on-key-move-cell [entities direction]
   (cell/cell-move-sound)
-  (replace {(cell/find-cell entities)
-             (cell/move-cell entities direction)}
-           entities))
+  (let [cell (cell/find-cell entities)]
+    (replace {cell (move-cell cell direction)}
+             entities)))
 
 (defn game-over [screen]
   (do (set-screen! con-world game-over-screen)
@@ -101,7 +101,7 @@
                (add-timer! screen :ambiant-sound 3 3)
                (sound! (:music screen) :loop)
 
-               [ background
+               [background
                 (create-wall-entity screen)
                 (cell/create-plante-zone! screen)
                 (create-player-entity screen)]))
