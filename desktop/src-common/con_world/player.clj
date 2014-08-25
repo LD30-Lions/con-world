@@ -41,3 +41,8 @@
 (defn create-player-entity [ screen]
   (-> (create-cell-entity! screen)
       (set-player-initial-settings)))
+
+(defn player-dead? [player-entity]
+  (-> (cell/find-cell player-entity)
+      :life
+      (<= 0)))

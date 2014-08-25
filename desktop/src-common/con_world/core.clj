@@ -16,11 +16,6 @@
 (load "wall")
 (load "player")
 
-(defn game-over? [entities]
-  (-> (cell/find-cell entities)
-      :life
-      (<= 0)))
-
 (defn stage-fit-vp [camera]
   (stage :set-viewport (FitViewport. u/res-width u/res-height camera)))
 
@@ -37,7 +32,19 @@
              (cell/move-cell entities direction)}
            entities))
 
+(defn game-over [screen]
+  (do (set-screen! con-world game-over-screen)
+      (sound! (:music screen) :stop)))
+
+(def key->direction
+  {(key-code :dpad-up)    :up,
+   (key-code :dpad-down)  :down,
+   (key-code :dpad-left)  :left,
+   (key-code :dpad-right) :right})
+
+
 (defscreen main-screen
+
            :on-show
            (fn [screen _]
 
@@ -55,12 +62,17 @@
                 (create-player-entity screen)]))
 
            :on-render
+
            (fn [screen entities]
+
+             (clear!)
+
              (let [[screen entities] (cell/may-spawn-enemy screen entities)]
-               (clear!)
-               (if (game-over? entities)
-                 (do (set-screen! con-world game-over-screen)
-                     (sound! (:music screen) :stop))
+
+               (if (player-dead? entities)
+
+                 (game-over screen)
+
                  (->> entities
                       (step! screen)
                       cell/change-cell-level
@@ -72,22 +84,9 @@
                       (render! screen)))))
 
            :on-key-down
-           (fn [screen entities]
-             (condp = (:key screen)
-
-               (key-code :dpad-up)
-               (on-key-move-cell entities :up)
-
-               (key-code :dpad-down)
-               (on-key-move-cell entities :down)
-
-               (key-code :dpad-left)
-               (on-key-move-cell entities :left)
-
-               (key-code :dpad-right)
-               (on-key-move-cell entities :right)
-
-               nil))
+           (fn [{:keys [key]} entities]
+             (when-let [direction (key->direction key)]
+               (on-key-move-cell entities direction)))
 
            :on-resize
            (fn [screen _]
