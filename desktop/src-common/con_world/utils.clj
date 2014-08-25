@@ -1,6 +1,7 @@
 (ns con-world.utils
   (:require [play-clj.g2d-physics :refer :all]
             [play-clj.g2d :refer :all]
+            [play-clj.g2d :refer :all]
             [play-clj.math :refer :all]
             [play-clj.core :refer :all]))
 
@@ -29,10 +30,9 @@
 
 (def memo-texture (memoize (fn [name] (texture name))))
 
-(def memo-sound (memoize (fn [name] (sound name))))
-
 (defn rand-sign [x]
   (if (even? (rand-int 2)) (* -1 x) (* 1 x)))
 
 (defn in-rectangle? [{:keys [x y width height]} r]
   (and (rectangle! r :contains x y) (rectangle! r :contains (+ x width) (+ y height))))
+

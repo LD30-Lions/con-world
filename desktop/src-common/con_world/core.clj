@@ -14,10 +14,10 @@
 
 (declare main-screen con-world intro-screen game-over-screen score-screen main-bg-screen)
 
+(load "sound")
 (load "wall")
 (load "player")
 (load "enemy")
-
 
 (defn stage-fit-vp [camera]
   (stage :set-viewport (FitViewport. u/res-width u/res-height camera)))
@@ -30,8 +30,8 @@
 
 
 (defn on-key-move-cell [entities direction]
-  (cell/cell-move-sound)
-  (let [cell (cell/find-cell entities)]
+  (cell-move-sound)
+  (let [cell (find-cell entities)]
     (replace {cell (move-cell cell direction)}
              entities)))
 
@@ -49,7 +49,7 @@
   (let [entities (filter #(contains? % :body) entities)
         coliding-entities [(first-entity screen entities) (second-entity screen entities)]]
     {:enemy       (cell/find-enemy coliding-entities)
-     :player      (cell/find-cell coliding-entities)
+     :player      (find-cell coliding-entities)
      :plante-zone (cell/find-plante-zone coliding-entities)
      :wall        (cell/find-wall coliding-entities)}))
 
@@ -57,8 +57,8 @@
   (let [new-life (- (:life player) 5)
         new-level (cell/calculate-level player)
         new-level? (not= new-level (:level player))]
-    (cell/touched-by-enemy-sound)
-    (when new-level? (cell/changed-level-sound player))
+    (touched-by-enemy-sound)
+    (when new-level? (changed-level-sound player))
     (run! score-screen :update-score :score new-life)
     (run! score-screen :update-level :level new-level)
     (replace {player (assoc player :life new-life :level new-level)} entities)))
@@ -68,8 +68,8 @@
         new-level (cell/calculate-level player)
         new-level? (not= new-level (:level player))]
     (println "new-life" new-life "new-level" new-level)
-    (cell/kill-enemy-sound player)
-    (when new-level? (cell/changed-level-sound player))
+    (kill-enemy-sound player)
+    (when new-level? (changed-level-sound player))
     (run! score-screen :update-level :level new-level)
     (run! score-screen :update-score :score new-life)
     (->> entities
@@ -96,7 +96,7 @@
                    screen (-> (init-graphic-settings screen)
                               (update!
                                 :world (box-2d 0 0)
-                                :music (u/memo-sound "sound/fond.mp3")
+                                :music (memo-sound "sound/fond.mp3")
                                 :bg-width (u/pixels->world (texture! background :get-region-width))
                                 :bg-height (u/pixels->world (texture! background :get-region-height))
                                 :last-spawn 0))]
@@ -115,7 +115,7 @@
 
              (clear!)
 
-             (let [[screen entities] (cell/may-spawn-enemy screen entities)]
+             (let [[screen entities] (may-spawn-enemy screen entities)]
 
                (if (player-dead? entities)
 
@@ -123,8 +123,8 @@
 
                  (->> entities
                       (step! screen)
-                      cell/change-cell-level
-                      (cell/animate-cell screen)
+                      change-cell-level
+                      (animate-cell screen)
                       (cell/animate-plante screen)
                       (cell/animate-enemies screen)
                       (map set-enemy-in-zone)
@@ -163,7 +163,7 @@
            (fn [screen entities]
              (when (= :ambiant-sound (:id screen))
                (when (even? (rand-int 2))
-                 (cell/ambiant-sound (cell/find-cell entities)))
+                 (ambiant-sound (find-cell entities)))
                entities)))
 
 (defscreen main-bg-screen
@@ -194,7 +194,7 @@
            :on-show
            (fn [screen _]
              (let [background (intro-screen-background)
-                   music (u/memo-sound "intro-screen-music.mp3")]
+                   music (memo-sound "intro-screen-music.mp3")]
                (update! (init-graphic-settings screen)
                         :bg-width (texture! background :get-region-width)
                         :bg-height (texture! background :get-region-height)
