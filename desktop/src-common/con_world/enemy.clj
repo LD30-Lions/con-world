@@ -1,5 +1,8 @@
 (in-ns 'con-world.core)
 
+(defn find-enemy [entities]
+  (some #(when (:enemy? %) %) entities))
+
 (defn random-vec2
   [x-max y-max]
   {:post [(and (< (.x %) x-max) (> (.x %) (- x-max))

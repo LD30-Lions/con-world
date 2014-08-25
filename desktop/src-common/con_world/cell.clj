@@ -7,17 +7,8 @@
             [play-clj.core :refer [sound!] :as pcore]
             [con-world.utils :as u]))
 
-
-
-(defn find-enemy [entities]
-  (some #(when (:enemy? %) %) entities))
-
-(defn find-wall [entities]
-  (some #(when (:wall? %) %) entities))
-
 (defn find-plante-zone [entities]
   (some #(when (:plante-zone? %) %) entities))
-
 
 (defn create-rect-body!
   [screen width height]

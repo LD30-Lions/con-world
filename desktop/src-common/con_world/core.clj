@@ -48,10 +48,10 @@
 (defn coliding-entities [screen entities]
   (let [entities (filter #(contains? % :body) entities)
         coliding-entities [(first-entity screen entities) (second-entity screen entities)]]
-    {:enemy       (cell/find-enemy coliding-entities)
+    {:enemy       (find-enemy coliding-entities)
      :player      (find-cell coliding-entities)
      :plante-zone (cell/find-plante-zone coliding-entities)
-     :wall        (cell/find-wall coliding-entities)}))
+     :wall        (find-wall coliding-entities)}))
 
 (defn do-player-lose [entities player]
   (let [new-life (- (:life player) 5)
