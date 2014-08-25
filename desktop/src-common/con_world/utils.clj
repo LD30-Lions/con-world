@@ -1,6 +1,7 @@
 (ns con-world.utils
   (:require [play-clj.g2d-physics :refer :all]
             [play-clj.g2d :refer :all]
+            [play-clj.math :refer :all]
             [play-clj.core :refer :all]))
 
 (def pixels-per-tile 20) ; 540 / 27 = 20
@@ -32,3 +33,6 @@
 
 (defn rand-sign [x]
   (if (even? (rand-int 2)) (* -1 x) (* 1 x)))
+
+(defn in-rectangle? [{:keys [x y width height]} r]
+  (and (rectangle! r :contains x y) (rectangle! r :contains (+ x width) (+ y height))))

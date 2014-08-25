@@ -18,6 +18,7 @@
 (load "player")
 (load "enemy")
 
+
 (defn stage-fit-vp [camera]
   (stage :set-viewport (FitViewport. u/res-width u/res-height camera)))
 
@@ -126,7 +127,7 @@
                       (cell/animate-cell screen)
                       (cell/animate-plante screen)
                       (cell/animate-enemies screen)
-                      (map cell/set-enemy-in-zone)
+                      (map set-enemy-in-zone)
                       (map move-enemy)
                       (render! screen)))))
 
@@ -180,39 +181,8 @@
            (fn [screen _]
              (size! screen u/w-width u/w-height)))
 
-(defscreen score-screen
-           :on-show
-           (fn [screen _]
-             (update! screen :renderer (stage) :camera (orthographic))
-             [(assoc (label "vie 1" (color :white))
-                :y (- (game :height) 16)
-                :score? true)
-              (assoc (label "plante 1" (color :white))
-                :y (- (game :height) 16) :x 100
-                :plante-vie? true)
-              (assoc (label "level 1" (color :white))
-                :y (- (game :height) 16) :x 200
-                :level? true)])
 
-
-           :on-render
-           (fn [screen entities]
-             (render! screen entities))
-
-           :update-score
-           (fn [{:keys [score]} entities]
-             (let [score-label (cell/find-score entities)]
-               (replace {score-label (doto score-label (label! :set-text (str "vie " score)))} entities)))
-
-           :update-level
-           (fn [{:keys [level]} entities]
-             (let [level-label (cell/find-level entities)]
-               (replace {level-label (doto level-label (label! :set-text (str "level " level)))} entities)))
-
-           :on-resize
-           (fn [screen entities]
-             (size! screen (game :width) (game :height))
-             entities))
+(load "screen-score")
 
 (defn intro-screen-background []
   (u/memo-texture "intro-screen-background.png"))

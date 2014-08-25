@@ -22,5 +22,14 @@
     (change-enemy-velocity enemy-entity)
     enemy-entity))
 
+(defn set-enemy-in-zone [{:keys [in-zone? enemy?] :as enemy-entity}]
+  (if (and (not in-zone?) enemy?)
+    (let [r (rectangle 0 0 u/w-width u/w-height)]
+      (if (u/in-rectangle? enemy-entity r)
+        (assoc enemy-entity :in-zone? true)
+        enemy-entity))
+    enemy-entity))
+
+
 
 

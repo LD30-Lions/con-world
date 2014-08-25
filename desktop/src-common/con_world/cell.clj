@@ -9,16 +9,8 @@
 
 
 
-(defn in-rectangle? [{:keys [x y width height]} r]
-  (and (rectangle! r :contains x y) (rectangle! r :contains (+ x width) (+ y height))))
 
-(defn set-enemy-in-zone [{:keys [in-zone? enemy?] :as entity}]
-  (if (and (not in-zone?) enemy?)
-    (let [r (rectangle 0 0 u/w-width u/w-height)]
-      (if (in-rectangle? entity r)
-        (assoc entity :in-zone? true)
-        entity))
-    entity))
+
 
 (defn find-cell [entities]
   (some #(when (:cell? %) %) entities))
@@ -29,14 +21,10 @@
 (defn find-wall [entities]
   (some #(when (:wall? %) %) entities))
 
-(defn find-score [entities]
-  (some #(when (:score? %) %) entities))
-
 (defn find-plante-zone [entities]
   (some #(when (:plante-zone? %) %) entities))
 
-(defn find-level [entities]
-  (some #(when (:level? %) %) entities))
+
 
 (defn create-enemy-body!
   [screen radius]
