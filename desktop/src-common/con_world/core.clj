@@ -43,7 +43,8 @@
    (key-code :dpad-right) :right})
 
 (defn coliding-entities [screen entities]
-  (let [coliding-entities [(first-entity screen entities) (second-entity screen entities)]]
+  (let [entities (filter #(contains? % :body) entities)
+        coliding-entities [(first-entity screen entities) (second-entity screen entities)]]
     {:enemy       (cell/find-enemy coliding-entities)
      :player      (cell/find-cell coliding-entities)
      :plante-zone (cell/find-plante-zone coliding-entities)
@@ -88,16 +89,20 @@
            :on-show
            (fn [screen _]
 
-             (let [screen (-> (init-graphic-settings screen)
+             (let [background (u/memo-texture "main-screen-background-1.png")
+                   screen (-> (init-graphic-settings screen)
                               (update!
                                 :world (box-2d 0 0)
                                 :music (u/memo-sound "sound/fond.mp3")
+                                :bg-width (u/pixels->world (texture! background :get-region-width))
+                                :bg-height (u/pixels->world (texture! background :get-region-height))
                                 :last-spawn 0))]
 
                (add-timer! screen :ambiant-sound 3 3)
                (sound! (:music screen) :loop)
 
-               [(create-wall-entity screen)
+               [ background
+                (create-wall-entity screen)
                 (cell/create-plante-zone! screen)
                 (create-player-entity screen)]))
 
@@ -130,7 +135,7 @@
 
            :on-resize
            (fn [screen _]
-             (size! screen u/w-width u/w-height))
+             (size! screen (:bg-width screen) (:bg-height screen)))
 
            :on-end-contact
            (fn [screen entities]
@@ -153,25 +158,20 @@
 
            :on-timer
            (fn [screen entities]
-             (println "timer")
              (when (= :ambiant-sound (:id screen))
-               (when (= 0 (mod (rand-int 2) 2))
+               (when (even? (rand-int 2))
                  (cell/ambiant-sound (cell/find-cell entities)))
                entities)))
 
 (defscreen main-bg-screen
            :on-show
            (fn [screen _]
-             (let [camera (orthographic)]
-               (update! screen
-                        :camera camera
-                        :renderer (stage-fit-vp camera))
-               (u/memo-texture "main-screen-background-1.png")))
+             (init-graphic-settings screen)
+             (u/memo-texture "main-screen-background-1.png"))
 
            :on-render
            (fn [screen entities]
-             #_(println entities)
-             (clear! 0 1 0 1)
+             #!(clear! 0 1 0 1)
              (render! screen entities))
 
            :on-resize
@@ -222,11 +222,8 @@
            :on-show
            (fn [screen _]
              (let [background (intro-screen-background)
-                   music (u/memo-sound "intro-screen-music.mp3")
-                   camera (orthographic)]
-               (update! screen
-                        :renderer (stage-fit-vp camera)
-                        :camera camera
+                   music (u/memo-sound "intro-screen-music.mp3")]
+               (update! (init-graphic-settings screen)
                         :bg-width (texture! background :get-region-width)
                         :bg-height (texture! background :get-region-height)
                         :music music)
@@ -262,10 +259,8 @@
 (defscreen game-over-screen
            :on-show
            (fn [screen _]
-             (let [camera (orthographic)]
-               (update! screen
-                        :camera camera
-                        :renderer (stage-fit-vp camera)))
+             (init-graphic-settings screen)
+             ; FIX son de Ben
              #_(sound! (u/memo-sound "sound/gameover.wav") :play)
              (label "Game over" (color :red)))
 
