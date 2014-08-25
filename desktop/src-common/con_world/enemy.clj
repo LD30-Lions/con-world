@@ -89,3 +89,14 @@
       (spawn-enemy-sound (find-cell entities))
       [(play-clj.core/update! screen :last-spawn (int total-time)) (conj entities (spawn-enemy screen entities))])
     [screen entities]))
+
+(defn animate-enemies [screen entities]
+  (map (fn [entity]
+         (if (:enemy? entity)
+           (let [velocity (body! entity :get-linear-velocity)
+                 not-moving (vector-2! velocity :is-zero 1)]
+             (if not-moving
+               (merge entity (:stand entity))
+               (merge entity (animation->texture screen (:walk entity)))))
+           entity))
+    entities))

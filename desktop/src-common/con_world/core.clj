@@ -8,7 +8,6 @@
             [play-clj.math :refer :all]
             [play-clj.ui :refer :all]
             [play-clj.g2d-physics :refer :all]
-            [con-world.cell :as cell]
             [con-world.physics :as phy]
             [con-world.utils :as u]))
 
@@ -18,6 +17,7 @@
 (load "wall")
 (load "player")
 (load "enemy")
+(load "plante")
 
 (defn stage-fit-vp [camera]
   (stage :set-viewport (FitViewport. u/res-width u/res-height camera)))
@@ -50,12 +50,12 @@
         coliding-entities [(first-entity screen entities) (second-entity screen entities)]]
     {:enemy       (find-enemy coliding-entities)
      :player      (find-cell coliding-entities)
-     :plante-zone (cell/find-plante-zone coliding-entities)
+     :plante-zone (find-plante-zone coliding-entities)
      :wall        (find-wall coliding-entities)}))
 
 (defn do-player-lose [entities player]
   (let [new-life (- (:life player) 5)
-        new-level (cell/calculate-level player)
+        new-level (calculate-level player)
         new-level? (not= new-level (:level player))]
     (touched-by-enemy-sound)
     (when new-level? (changed-level-sound player))
@@ -65,7 +65,7 @@
 
 (defn do-player-win [entities player enemy]
   (let [new-life (inc (:life player))
-        new-level (cell/calculate-level player)
+        new-level (calculate-level player)
         new-level? (not= new-level (:level player))]
     (println "new-life" new-life "new-level" new-level)
     (kill-enemy-sound player)
@@ -106,7 +106,7 @@
 
                [background
                 (create-wall-entity screen)
-                (cell/create-plante-zone! screen)
+                (create-plante-zone! screen)
                 (create-player-entity screen)]))
 
            :on-render
@@ -125,8 +125,8 @@
                       (step! screen)
                       change-cell-level
                       (animate-cell screen)
-                      (cell/animate-plante screen)
-                      (cell/animate-enemies screen)
+                      (animate-plante screen)
+                      (animate-enemies screen)
                       (map set-enemy-in-zone)
                       (map move-enemy)
                       (render! screen)))))

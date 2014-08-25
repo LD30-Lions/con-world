@@ -72,3 +72,9 @@
     (if not-moving
       (replace {player (merge player (:stand player))} entities)
       (replace {player (merge player (animation->texture screen (:walk player)))} entities))))
+
+(defn calculate-level [{:keys [life]}]
+  (let [mapping [[5 1], [10 2], [15 3], [20 4], [25 5]]]
+    (some (fn [[map-life map-level]]
+            (when (< life map-life) map-level))
+          mapping)))

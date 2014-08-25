@@ -4,6 +4,6 @@
   (some #(when (:wall? %) %) entities))
 
 (defn create-wall-entity [screen]
-  (doto {:body  (cell/create-rect-body! screen u/w-width u/z-height)
+  (doto {:body  (phy/create-rect-body! screen u/w-width u/z-height)
                                  :wall? true}
                             (body-position! 0 0 0)))

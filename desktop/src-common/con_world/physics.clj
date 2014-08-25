@@ -14,3 +14,17 @@
   (let [current-velocity (body! entity :get-linear-velocity)
         new-velocity (vector-2! current-velocity :add vec-2)]
     (set-velocity entity new-velocity)))
+
+(defn create-rect-body!
+  [screen width height]
+  (let [body (add-body! screen (body-def :static))]
+    (->> [0 0
+          0 height
+          width height
+          width 0
+          0 0]
+         float-array
+         (chain-shape :create-chain)
+         (fixture-def :density 1 :shape)
+         (body! body :create-fixture))
+    body))
