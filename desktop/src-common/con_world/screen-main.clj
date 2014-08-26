@@ -45,7 +45,8 @@
     (run! score-screen :update-score :score new-life)
     (->> entities
          (remove #(= % enemy))
-         (replace {player (assoc player :life new-life :level new-level)}))))
+         (replace {player (->> (assoc player :life new-life :level new-level)
+                               (update-cell-sprite!))}))))
 
 (defn disable-contact? [contact {:keys [z-side in-zone?]}]
   (let [normal (-> contact

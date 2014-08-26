@@ -11,6 +11,13 @@
          (body! body :create-fixture))
     body))
 
+(def player-index
+  {1 [40 2]
+   2 [60 2]
+   3 [75 2]
+   4 [90 2]
+   5 [120 2]})
+
 (defn create-cell-entity!
   [screen]
   (let [{cell-images :sprites stand :first} (image->sprite "entities/cell1.png" 40 40 2)
@@ -24,6 +31,17 @@
       :cell? true
       :life 1
       :level 1)))
+
+(defn update-cell-sprite!
+  [{:keys [level] :as player}]
+  (let [[size nb] (player-index level)
+        {cell-images :sprites stand :first} (image->sprite (str "entities/cell" level ".png") size size nb)
+        width (u/pixels->world (texture! stand :get-region-width))
+        height (u/pixels->world (texture! stand :get-region-height))]
+    (assoc player
+      :stand stand
+      :walk (animation 0.2 cell-images :set-play-mode (play-mode :loop-pingpong))
+      :width width :height height)))
 
 (defn move-player [player-entity x y]
   (doto player-entity (body-position! x y 0)))
