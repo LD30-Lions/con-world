@@ -15,7 +15,6 @@
   (play-sound (str "sound/mouvement/" (inc (rand-int 4)) ".wav")))
 
 (defn ambiant-sound [{:keys [level]}]
-  (println "son ambiance " (str "sound/ambiance/" (nth (tonalites level) (rand-int 8)) ".wav"))
   (when level (play-sound (str "sound/ambiance/" (nth (tonalites level) (rand-int 8)) ".wav"))))
 
 (defn kill-enemy-sound [{:keys [level]}]
