@@ -2,7 +2,7 @@
 
 (defn on-key-move-cell [entities direction]
   (cell-move-sound)
-  (let [cell (find-cell entities)]
+  (let [cell (find-player entities)]
     (replace {cell (move-cell cell direction)}
              entities)))
 
@@ -20,7 +20,7 @@
   (let [entities (filter #(contains? % :body) entities)
         coliding-entities [(first-entity screen entities) (second-entity screen entities)]]
     {:enemy       (find-enemy coliding-entities)
-     :player      (find-cell coliding-entities)
+     :player      (find-player coliding-entities)
      :plante-zone (find-plante-zone coliding-entities)
      :wall        (find-wall coliding-entities)}))
 
@@ -139,5 +139,5 @@
            (fn [screen entities]
              (when (= :ambiant-sound (:id screen))
                (when (even? (rand-int 2))
-                 (ambiant-sound (find-cell entities)))
+                 (ambiant-sound (find-player entities)))
                entities)))

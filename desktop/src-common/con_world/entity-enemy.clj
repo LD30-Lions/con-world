@@ -64,7 +64,7 @@
       (body! :set-linear-velocity x-velocity y-velocity))))
 
 (defn spawn-enemy [screen entities]
-  (let [{:keys [level]} (find-cell entities)
+  (let [{:keys [level]} (find-player entities)
         index (inc (rand-int (inc level)))
         [size nb-sprite] (enemy-index index)
         {en-images :sprites stand :first} (image->sprite (str "entities/ennemi" index ".png") size size nb-sprite)
@@ -85,7 +85,7 @@
            (= 0 (mod (int total-time) 2)))
     (do
       (println "spawn!")
-      (spawn-enemy-sound (find-cell entities))
+      (spawn-enemy-sound (find-player entities))
       [(play-clj.core/update! screen :last-spawn (int total-time)) (conj entities (spawn-enemy screen entities))])
     [screen entities]))
 
