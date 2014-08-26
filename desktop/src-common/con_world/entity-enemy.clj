@@ -65,7 +65,7 @@
 
 (defn spawn-enemy [screen entities]
   (let [{:keys [level]} (find-cell entities)
-        index (+ level 1 (u/rand-sign 1))
+        index (inc (rand-int (inc level)))
         [size nb-sprite] (enemy-index index)
         {en-images :sprites stand :first} (image->sprite (str "entities/ennemi" index ".png") size size nb-sprite)
         width (u/pixels->world size)]
