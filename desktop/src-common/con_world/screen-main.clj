@@ -65,12 +65,15 @@
            (fn [screen _]
 
              (let [background (u/memo-texture "main-screen-background-1.png")
+                   background (assoc background
+                                :width (u/pixels->world (texture! background :get-region-width))
+                                :height (u/pixels->world (texture! background :get-region-height)))
                    screen (-> (init-graphic-settings screen)
                               (update!
                                 :world (box-2d 0 0)
                                 :music (memo-sound "sound/fond.mp3")
-                                :bg-width (u/pixels->world (texture! background :get-region-width))
-                                :bg-height (u/pixels->world (texture! background :get-region-height))
+                                :bg-width (:width background)
+                                :bg-height (:height background)
                                 :last-spawn 0))]
 
                (add-timer! screen :ambiant-sound 3 3)
