@@ -24,20 +24,22 @@
      :plante-zone (find-plante-zone coliding-entities)
      :wall        (find-wall coliding-entities)}))
 
-(defn do-player-lose [entities player]
-  (let [new-life (- (:life player) 5)
+(defn do-player-lose [entities {:keys [life level] :as player}]
+  (let [new-life (- life 5)
         new-level (calculate-level player)
-        new-level? (not= new-level (:level player))]
+        new-level? (not= new-level level)]
+    (println "new-life" new-life "new-level" new-level)
     (touched-by-enemy-sound)
     (when new-level? (changed-level-sound player))
     (run! score-screen :update-score :score new-life)
     (run! score-screen :update-level :level new-level)
-    (replace {player (assoc player :life new-life :level new-level)} entities)))
+    (replace {player (->> (assoc player :life new-life :level new-level)
+                          (update-cell-sprite!))} entities)))
 
-(defn do-player-win [entities player enemy]
-  (let [new-life (inc (:life player))
-        new-level (calculate-level player)
-        new-level? (not= new-level (:level player))]
+(defn do-player-win [entities {:keys [level life] :as player} enemy]
+  (let [new-life (inc life)
+        new-level (or (calculate-level player) level)
+        new-level? (not= new-level level)]
     (println "new-life" new-life "new-level" new-level)
     (kill-enemy-sound player)
     (when new-level? (changed-level-sound player))
@@ -98,8 +100,8 @@
 
                  (->> entities
                       (step! screen)
-                      change-cell-level
-                      (animate-cell screen)
+                      change-player-level
+                      (animate-player screen)
                       (animate-plante screen)
                       (animate-enemies screen)
                       (map set-enemy-in-zone)

@@ -70,16 +70,16 @@
       :life
       (<= 0)))
 
-(defn player-win? [{p-width :width} {e-width :width}]
-  (> p-width e-width))
+(defn player-win? [{p-level :level} {e-level :level}]
+  (>= p-level e-level))
 
-(defn change-cell-level [entities]
-  (let [cell (find-player entities)]
-    (replace {cell (merge cell
-                          (u/memo-texture (str "cell" (:level cell) ".png")))}
+(defn change-player-level [entities]
+  (let [player (find-player entities)]
+    (replace {player (merge player
+                          (u/memo-texture (str "cell" (:level player) ".png")))}
              entities)))
 
-(defn animate-cell [screen entities]
+(defn animate-player [screen entities]
   (let [player (find-player entities)
         velocity (body! player :get-linear-velocity)
         not-moving (vector-2! velocity :is-zero 1)]
