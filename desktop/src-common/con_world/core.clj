@@ -16,14 +16,13 @@
 (defn start-main-screens []
   (set-screen! con-world main-screen score-screen #_main-bg-screen))
 
+(load "utils-graphics")
 (load "sound")
 
 (load "entity-wall")
 (load "entity-player")
 (load "entity-enemy")
 (load "entity-plante")
-
-(load "utils-graphics")
 
 (load "screen-main")
 (load "screen-score")
