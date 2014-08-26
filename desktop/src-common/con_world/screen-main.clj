@@ -57,8 +57,7 @@
          (or
            (and (= z-side :right) (= normal (vector-2 1.0 0.0)))
            (and (= z-side :bottom) (= normal (vector-2 0.0 -1.0)))
-           (and (= z-side :left) (= normal (vector-2 -1.0 0.0)))
-           ))))
+           (and (= z-side :left) (= normal (vector-2 -1.0 0.0)))))))
 
 (defscreen main-screen
 
