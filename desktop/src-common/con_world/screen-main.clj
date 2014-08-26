@@ -129,8 +129,12 @@
            (fn [{:keys [^Contact contact] :as screen} entities]
              (let [{:keys [player enemy wall plante-zone]} (coliding-entities screen entities)
                    disable-contact? (disable-contact? contact enemy)]
-               (when (and enemy wall disable-contact?)
-                 (.setEnabled contact false))
+               (when (and enemy wall #_disable-contact?)
+                 (let [normal (-> contact
+                                  (.getWorldManifold)
+                                  (.getNormal))]
+                   (println normal (.epsilonEquals normal 0 -1 0.1)))
+                 (.setEnabled contact true))
                (when (and plante-zone player)
                  (.setEnabled contact false))
                entities))

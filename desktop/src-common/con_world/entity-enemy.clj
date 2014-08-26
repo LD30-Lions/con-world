@@ -53,15 +53,11 @@
 
 (defn init-enemy-body-spacial-settings [{:keys [width height z-side] :as enemy-entity}]
   (let [x-max (- u/z-width width)
-        y-max (- u/z-height height)
-        [x y x-velocity y-velocity]
-        (condp = z-side
-          :right [(+ x-max) (rand-int y-max) (- u/cell-x-velocity) 0]
-          :bottom [(rand-int x-max) 0 0 u/cell-y-velocity]
-          :left [0 (rand-int y-max) u/cell-x-velocity 0])]
+        y-max (- u/z-height height)]
+    (println width height)
     (doto enemy-entity
-      (body-position! x y 0)
-      (body! :set-linear-velocity x-velocity y-velocity))))
+      (body-position! 20 (+ height  y-max) 0)
+      (body! :set-linear-velocity 0 10))))
 
 (defn spawn-enemy [screen entities]
   (let [{:keys [level]} (find-cell entities)
@@ -77,7 +73,7 @@
           :width width
           :height (u/pixels->world size)
           :enemy? true
-          :z-side (directions (rand-int 3)))
+          :z-side :top #_(directions (rand-int 3)))
       (init-enemy-body-spacial-settings))))
 
 (defn may-spawn-enemy
