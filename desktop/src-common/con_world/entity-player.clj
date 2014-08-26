@@ -13,11 +13,7 @@
 
 (defn create-cell-entity!
   [screen]
-  (let [sheet (texture "entities/cell1.png")
-        tiles (texture! sheet :split 40 40)
-        cell-images (for [col [0 1]]
-                      (texture (aget tiles 0 col)))
-        stand (first cell-images)
+  (let [{cell-images :sprites stand :first} (image->sprite "entities/cell1.png" 40 40 2)
         width (u/pixels->world (texture! stand :get-region-width))
         height (u/pixels->world (texture! stand :get-region-height))]
     (assoc stand

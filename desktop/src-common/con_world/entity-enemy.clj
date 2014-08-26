@@ -54,13 +54,10 @@
 (defn spawn-enemy [screen entities]
   (let [{:keys [level]} (find-cell entities)
          index (+ level 1 (u/rand-sign 1))
-        sheet (u/memo-texture (str "entities/ennemi" index ".png"))
-        tiles (texture! sheet :split (first (enemy-index index)) (first (enemy-index index)))
-        en-images (for [col (range (second (enemy-index index)))]
-                    (texture (aget tiles 0 col)))
-        stand (first en-images)
-        width (u/pixels->world (texture! stand :get-region-width))
-        height (u/pixels->world (texture! stand :get-region-height))
+         [size nb-sprite] (enemy-index index)
+         {en-images :sprites stand :first} (image->sprite (str "entities/ennemi" index ".png") size size nb-sprite)
+        width (u/pixels->world size)
+        height (u/pixels->world size)
         x-max (- u/z-width width)
         y-max (- u/z-height height)
         z-side (directions (rand-int 3))

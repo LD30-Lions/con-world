@@ -5,8 +5,7 @@
 
 (defn create-plante-zone!
   [screen]
-  (let [plante-images (image->sprite "entities/racines.png" 130 130 4)
-        stand (first plante-images)
+  (let [{plante-images :sprites stand :first} (image->sprite "entities/racines.png" 130 130 4)
         width (u/pixels->world (texture! stand :get-region-width))
         height (u/pixels->world (texture! stand :get-region-height))]
     (assoc stand
