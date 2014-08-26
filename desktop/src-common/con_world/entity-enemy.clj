@@ -80,13 +80,15 @@
           :z-side (directions (rand-int 3)))
       (init-enemy-body-spacial-settings))))
 
-(defn may-spawn-enemy [{:keys [last-spawn total-time] :as screen} entities]
+(defn may-spawn-enemy
+  "TODO : make timer reliable"
+  [{:keys [last-spawn total-time] :as screen} entities]
   (if (and (not= last-spawn (int total-time))
-           (= 0 (mod (int total-time) 2)))
+           (even? (int total-time)))
     (do
-      (println "spawn!")
       (spawn-enemy-sound (find-cell entities))
-      [(play-clj.core/update! screen :last-spawn (int total-time)) (conj entities (spawn-enemy screen entities))])
+      [(play-clj.core/update! screen :last-spawn (int total-time))
+       (conj entities (spawn-enemy screen entities))])
     [screen entities]))
 
 (defn animate-enemies [screen entities]
