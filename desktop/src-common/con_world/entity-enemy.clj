@@ -51,32 +51,34 @@
          (body! body :create-fixture))
     body))
 
-(defn spawn-enemy [screen entities]
-  (let [{:keys [level]} (find-cell entities)
-         index (+ level 1 (u/rand-sign 1))
-         [size nb-sprite] (enemy-index index)
-         {en-images :sprites stand :first} (image->sprite (str "entities/ennemi" index ".png") size size nb-sprite)
-        width (u/pixels->world size)
-        height (u/pixels->world size)
-        x-max (- u/z-width width)
+(defn init-enemy-body-spacial-settings [{:keys [width height z-side] :as enemy-entity}]
+  (let [x-max (- u/z-width width)
         y-max (- u/z-height height)
-        z-side (directions (rand-int 3))
         [x y x-velocity y-velocity]
         (condp = z-side
           :right [(+ x-max) (rand-int y-max) (- u/cell-x-velocity) 0]
           :bottom [(rand-int x-max) 0 0 u/cell-y-velocity]
           :left [0 (rand-int y-max) u/cell-x-velocity 0])]
-    (println x y x-velocity y-velocity z-side)
-    (doto
+    (doto enemy-entity
+      (body-position! x y 0)
+      (body! :set-linear-velocity x-velocity y-velocity))))
+
+(defn spawn-enemy [screen entities]
+  (let [{:keys [level]} (find-cell entities)
+        index (+ level 1 (u/rand-sign 1))
+        [size nb-sprite] (enemy-index index)
+        {en-images :sprites stand :first} (image->sprite (str "entities/ennemi" index ".png") size size nb-sprite)
+        width (u/pixels->world size)]
+    (->
         (assoc stand
           :stand stand
           :walk (animation 0.1 en-images :set-play-mode (play-mode :loop-pingpong))
           :body (create-enemy-body! screen (/ width 2))
-          :width width :height height
+          :width width
+          :height (u/pixels->world size)
           :enemy? true
-          :z-side z-side)
-      (body-position! x y 0)
-      (body! :set-linear-velocity x-velocity y-velocity))))
+          :z-side (directions (rand-int 3)))
+      (init-enemy-body-spacial-settings))))
 
 (defn may-spawn-enemy [{:keys [last-spawn total-time] :as screen} entities]
   (if (and (not= last-spawn (int total-time))
