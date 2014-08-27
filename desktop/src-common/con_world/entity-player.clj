@@ -1,6 +1,6 @@
 (in-ns 'con-world.core)
 
-(defn find-cell [entities]
+(defn find-player [entities]
   (some #(when (:cell? %) %) entities))
 
 (defn create-cell-body!
@@ -66,21 +66,21 @@
   (phy/add-velocity cell (direction direction->velocity)))
 
 (defn player-dead? [player-entity]
-  (-> (find-cell player-entity)
+  (-> (find-player player-entity)
       :life
       (<= 0)))
 
-(defn player-win? [{p-width :width} {e-width :width}]
-  (> p-width e-width))
+(defn player-win? [{p-level :level} {e-level :level}]
+  (>= p-level e-level))
 
-(defn change-cell-level [entities]
-  (let [cell (find-cell entities)]
-    (replace {cell (merge cell
-                          (u/memo-texture (str "cell" (:level cell) ".png")))}
+(defn change-player-level [entities]
+  (let [player (find-player entities)]
+    (replace {player (merge player
+                          (u/memo-texture (str "cell" (:level player) ".png")))}
              entities)))
 
-(defn animate-cell [screen entities]
-  (let [player (find-cell entities)
+(defn animate-player [screen entities]
+  (let [player (find-player entities)
         velocity (body! player :get-linear-velocity)
         not-moving (vector-2! velocity :is-zero 1)]
     (if not-moving

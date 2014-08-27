@@ -18,9 +18,9 @@
              (start-main-screens)
              entities)
 
-           :on-key-down
+           :on-touch-down
            (fn [_ entities]
-             (set-screen! con-world main-screen score-screen)
+             (start-main-screens)
              entities)
 
            :on-resize

@@ -64,20 +64,21 @@
       (body! :set-linear-velocity x-velocity y-velocity))))
 
 (defn spawn-enemy [screen entities]
-  (let [{:keys [level]} (find-cell entities)
-        index (inc (rand-int (inc level)))
-        [size nb-sprite] (enemy-index index)
-        {en-images :sprites stand :first} (image->sprite (str "entities/ennemi" index ".png") size size nb-sprite)
+  (let [{:keys [level]} (find-player entities)
+        e-level (inc (rand-int (inc level)))
+        [size nb-sprite] (enemy-index e-level)
+        {en-images :sprites stand :first} (image->sprite (str "entities/ennemi" e-level ".png") size size nb-sprite)
         width (u/pixels->world size)]
     (->
-        (assoc stand
-          :stand stand
-          :walk (animation 0.1 en-images :set-play-mode (play-mode :loop-pingpong))
-          :body (create-enemy-body! screen (/ width 2))
-          :width width
-          :height (u/pixels->world size)
-          :enemy? true
-          :z-side (directions (rand-int 3)))
+      (assoc stand
+        :stand stand
+        :walk (animation 0.1 en-images :set-play-mode (play-mode :loop-pingpong))
+        :body (create-enemy-body! screen (/ width 2))
+        :width width
+        :height (u/pixels->world size)
+        :enemy? true
+        :z-side (directions (rand-int 3))
+        :level e-level)
       (init-enemy-body-spacial-settings))))
 
 (defn may-spawn-enemy
@@ -86,9 +87,9 @@
   (if (and (not= last-spawn (int total-time))
            (even? (int total-time)))
     (do
-      (spawn-enemy-sound (find-cell entities))
-      [(play-clj.core/update! screen :last-spawn (int total-time))
-       (conj entities (spawn-enemy screen entities))])
+      (spawn-enemy-sound (find-player entities))
+      [(play-clj.core/update! screen :last-spawn (int total-time)) (conj entities (spawn-enemy screen entities))])
+
     [screen entities]))
 
 (defn animate-enemies [screen entities]
@@ -100,4 +101,4 @@
                (merge entity (:stand entity))
                (merge entity (animation->texture screen (:walk entity)))))
            entity))
-    entities))
+       entities))
