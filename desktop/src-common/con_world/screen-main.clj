@@ -87,12 +87,14 @@
                 (create-player-entity screen)]))
 
            :on-render
-
-           (fn [screen entities]
+           (fn [{:keys [debug-physics?] :as screen} entities]
 
              (clear!)
 
              (let [[screen entities] (may-spawn-enemy screen entities)]
+
+               (when debug-physics?
+                 (draw-phisics-bodies screen))
 
                (if (player-dead? entities)
 
@@ -109,9 +111,12 @@
                       (render! screen)))))
 
            :on-key-down
-           (fn [{:keys [key]} entities]
+           (fn [{:keys [key] :as screen} entities]
              (when-let [direction (key->direction key)]
-               (on-key-move-cell entities direction)))
+               (on-key-move-cell entities direction))
+             (when (= 255 key)
+               (update! screen :debug-physics? true)
+               entities))
 
            :on-resize
            (fn [screen _]
