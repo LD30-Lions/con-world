@@ -61,6 +61,17 @@
            (and (= z-side :bottom) (= normal (vector-2 0.0 -1.0)))
            (and (= z-side :left) (= normal (vector-2 -1.0 0.0)))))))
 
+(defmulti apply-event (fn [_ _ [type & _]] type))
+
+(defmethod apply-event :player-moved [screen entities [_ direction]]
+  (on-key-move-cell entities direction))
+
+(defn apply-events [{:keys [events] :as screen} entities]
+  (reduce (fn [entities evt]
+            (apply-event screen entities evt))
+          entities
+          events))
+
 (defscreen main-screen
 
            :on-show
@@ -76,7 +87,8 @@
                                 :music (memo-sound "sound/fond.mp3")
                                 :bg-width (:width background)
                                 :bg-height (:height background)
-                                :last-spawn 0))]
+                                :last-spawn 0
+                                :events []))]
 
                (add-timer! screen :ambiant-sound 3 3)
                (sound! (:music screen) :loop)
@@ -87,8 +99,8 @@
                 (create-player-entity screen)]))
 
            :on-render
-
            (fn [screen entities]
+
 
              (clear!)
 
@@ -98,20 +110,24 @@
 
                  (game-over screen)
 
-                 (->> entities
-                      (step! screen)
-                      change-player-level
-                      (animate-player screen)
-                      (animate-plante screen)
-                      (animate-enemies screen)
-                      (map set-enemy-in-zone)
-                      (map move-enemy)
-                      (render! screen)))))
+                 (let [result-entities (->> entities
+                                            (apply-events screen)
+                                            (step! screen)
+                                            change-player-level
+                                            (animate-player screen)
+                                            (animate-plante screen)
+                                            (animate-enemies screen)
+                                            (map set-enemy-in-zone)
+                                            (map move-enemy)
+                                            (render! screen))]
+                   (update! screen :events [])
+                   result-entities))))
 
            :on-key-down
-           (fn [{:keys [key]} entities]
+           (fn [{:keys [key] :as screen} entities]
              (when-let [direction (key->direction key)]
-               (on-key-move-cell entities direction)))
+               (update! screen :events (conj (:events screen) [:player-moved direction])))
+             entities)
 
            :on-resize
            (fn [screen _]
