@@ -1,7 +1,9 @@
 (ns con-world.core
   (:import (com.badlogic.gdx.physics.box2d Contact WorldManifold)
            (com.badlogic.gdx.math Vector2)
-           (com.badlogic.gdx.utils.viewport FitViewport))
+           (com.badlogic.gdx.utils.viewport FitViewport)
+           (com.badlogic.gdx.physics.box2d Box2DDebugRenderer)
+           (com.badlogic.gdx.graphics Camera))
   (:require [clojure.pprint :refer [pprint]]
             [play-clj.core :refer :all]
             [play-clj.g2d :refer :all]
