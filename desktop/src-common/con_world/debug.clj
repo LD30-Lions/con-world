@@ -10,3 +10,7 @@
         projection (-> main-screen :screen deref :camera .combined)
         world (:world screen)]
     (.render debug-renderer world projection)))
+
+(defn move-camera [x y]
+  (let [camera (-> main-screen :screen deref :camera)]
+    (.set (.position camera) x y 0)))
