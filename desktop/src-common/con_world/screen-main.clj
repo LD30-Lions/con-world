@@ -93,7 +93,7 @@
              (let [[screen entities] (may-spawn-enemy screen entities)]
 
                (when debug-physics?
-                 (draw-phisics-bodies screen))
+                 (draw-physics-bodies screen))
 
                (if (player-dead? entities)
 
