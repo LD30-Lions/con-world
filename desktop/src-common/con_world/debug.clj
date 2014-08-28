@@ -6,7 +6,7 @@
   (-> main-screen :entities deref pprint))
 
 (defn draw-physics-bodies [screen]
-  (let [debug-renderer (Box2DDebugRenderer.)
+  (let [debug-renderer (Box2DDebugRenderer. true true true true true true)
         projection (-> main-screen :screen deref :camera .combined)
         world (:world screen)]
     (.render debug-renderer world projection)))
