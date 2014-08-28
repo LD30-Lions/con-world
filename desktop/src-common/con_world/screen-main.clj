@@ -81,6 +81,7 @@
                (sound! (:music screen) :loop)
 
                [background
+                (create-uber-wall-entity screen)
                 (create-wall-entity screen)
                 (create-plante-zone! screen)
                 (create-player-entity screen)]))

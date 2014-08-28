@@ -8,7 +8,9 @@
                                  :wall? true}
                             (body-position! 0 0 0)))
 
+(def max-enemy-size (u/pixels->world 170))                  ; biggest enemy
+
 (defn create-uber-wall-entity [screen]
-  (doto {:body  (phy/create-rect-body! screen (+ 7 u/w-width) (+ 7 u/z-height))
-                                 :wall? true}
-                            (body-position! (- (/ 7 2)) (- (/ 7 2)) 0)))
+  (doto {:body  (phy/create-rect-body! screen (+ (* 2 max-enemy-size) u/w-width) (+ (* 2 max-enemy-size) u/z-height))
+                                 :uber-wall? true}
+                            (body-position! (- max-enemy-size) (- max-enemy-size) 0)))
