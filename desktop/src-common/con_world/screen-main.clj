@@ -90,7 +90,16 @@
 
              (clear!)
 
-             (let [[screen entities] (may-spawn-enemy screen entities)]
+             (let [[screen entities] (may-spawn-enemy screen entities)
+                   entities (->> entities
+                              (step! screen)
+                              change-player-level
+                              (animate-player screen)
+                              (animate-plante screen)
+                              (animate-enemies screen)
+                              (map set-enemy-in-zone)
+                              (map move-enemy)
+                              (render! screen))]
 
                (when debug-physics?
                  (draw-physics-bodies screen))
@@ -99,15 +108,7 @@
 
                  (game-over screen)
 
-                 (->> entities
-                      (step! screen)
-                      change-player-level
-                      (animate-player screen)
-                      (animate-plante screen)
-                      (animate-enemies screen)
-                      (map set-enemy-in-zone)
-                      (map move-enemy)
-                      (render! screen)))))
+                 entities)))
 
            :on-key-down
            (fn [{:keys [key debug-physics?] :as screen} entities]
