@@ -20,6 +20,7 @@
 
 (load "utils-graphics")
 (load "sound")
+(load "debug")
 
 (load "entity-wall")
 (load "entity-player")
@@ -37,5 +38,5 @@
          (fn [this]
            (set-screen! this intro-screen)))
 
-(load "debug")
+
 

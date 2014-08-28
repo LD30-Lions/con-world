@@ -55,11 +55,10 @@
                    (.getWorldManifold)
                    (.getNormal))]
     (and (not in-zone?)
-         #_(cell/in-rectangle? enemy (rectangle 0 0 u/z-width u/z-height))
          (or
-           (and (= z-side :right) (= normal (vector-2 1.0 0.0)))
-           (and (= z-side :bottom) (= normal (vector-2 0.0 -1.0)))
-           (and (= z-side :left) (= normal (vector-2 -1.0 0.0)))))))
+           (and (= z-side :right) (.epsilonEquals normal (vector-2 1.0 0.0) 0.1))
+           (and (= z-side :bottom) (.epsilonEquals normal (vector-2 0.0 -1.0) 0.1)
+                (and (= z-side :left) (.epsilonEquals normal (vector-2 -1.0 0.0) 0.1)))))))
 
 (defscreen main-screen
 
@@ -87,7 +86,7 @@
                 (create-player-entity screen)]))
 
            :on-render
-           (fn [{:keys [debug-physics?] :as screen} entities]
+           (fn [{:keys [debug-physics? camera] :as screen} entities]
 
              (clear!)
 
@@ -111,11 +110,11 @@
                       (render! screen)))))
 
            :on-key-down
-           (fn [{:keys [key] :as screen} entities]
+           (fn [{:keys [key debug-physics?] :as screen} entities]
              (when-let [direction (key->direction key)]
                (on-key-move-cell entities direction))
              (when (= 255 key)
-               (update! screen :debug-physics? true)
+               (update! screen :debug-physics? (not debug-physics?))
                entities))
 
            :on-resize
