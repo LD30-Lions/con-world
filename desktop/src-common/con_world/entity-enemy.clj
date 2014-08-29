@@ -25,11 +25,24 @@
     (change-enemy-velocity enemy-entity)
     enemy-entity))
 
+
+(def enemy-damping 3)
+(def enemy-restitution 0.7)
+
+(defn set-enemy-restitution [enemy-entity enemy-restitution]
+   (-> enemy-entity
+      (body! :get-fixture-list)
+      (.get 0)
+      (fixture! :set-restitution enemy-restitution))
+  enemy-entity)
+
 (defn set-enemy-in-zone [{:keys [in-zone? enemy?] :as enemy-entity}]
   (if (and (not in-zone?) enemy?)
     (let [r (rectangle 0 0 u/w-width u/w-height)]
       (if (u/in-rectangle? enemy-entity r)
-        (assoc enemy-entity :in-zone? true)
+        (-> (assoc enemy-entity :in-zone? true)
+            (set-enemy-restitution enemy-restitution)
+            (doto (body! :set-linear-damping enemy-damping)))
         enemy-entity))
     enemy-entity))
 
@@ -45,20 +58,21 @@
 
 (defn create-enemy-body!
   [screen radius]
-  (let [body (add-body! screen (body-def :dynamic :linear-damping 3))]
+  (let [body (add-body! screen (body-def :dynamic :linear-damping 0))]
     (->> (circle-shape radius)
-         (fixture-def :density 1 :friction 0 :restitution 0.7 :shape)
+         (fixture-def :density 1 :friction 0 :restitution 1 :shape)
          (body! body :create-fixture))
     body))
 
 (defn init-enemy-body-spacial-settings [{:keys [width height z-side] :as enemy-entity}]
   (let [x-max (- u/z-width width)
         y-max (- u/z-height height)
+        box2d-margin-bug 0.5                                ; when a body is precisely created against another body it seems that we can't disable collision. So this value is used to unstick the two bodies. See http://box2d.org/forum/viewtopic.php?f=3&t=9890&p=40789#p40789
         [x y x-velocity y-velocity]
         (condp = z-side
-          :right [(+ x-max) (rand-int y-max) (- u/cell-x-velocity) 0]
-          :bottom [(rand-int x-max) 0 0 u/cell-y-velocity]
-          :left [0 (rand-int y-max) u/cell-x-velocity 0])]
+          :right [(+ x-max width box2d-margin-bug) (rand-int y-max) (- u/cell-x-velocity) 0]
+          :bottom [(rand-int x-max) (- (+ height box2d-margin-bug)) 0 u/cell-y-velocity]
+          :left [(- (+ width box2d-margin-bug)) (rand-int y-max) u/cell-x-velocity 0])]
     (doto enemy-entity
       (body-position! x y 0)
       (body! :set-linear-velocity x-velocity y-velocity))))

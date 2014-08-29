@@ -18,8 +18,12 @@
 
 (defn coliding-entities [screen entities]
   (let [entities (filter #(contains? % :body) entities)
+        enemy-1 (find-enemy [(first-entity screen entities)])
+        enemy-2 (find-enemy [(second-entity screen entities)])
         coliding-entities [(first-entity screen entities) (second-entity screen entities)]]
-    {:enemy       (find-enemy coliding-entities)
+    {:enemy-1     enemy-1
+     :enemy-2     enemy-2
+     :enemy       (or enemy-1 enemy-2)
      :player      (find-player coliding-entities)
      :plante-zone (find-plante-zone coliding-entities)
      :wall        (find-wall coliding-entities)}))
@@ -50,16 +54,6 @@
          (replace {player (->> (assoc player :life new-life :level new-level)
                                (update-cell-sprite!))}))))
 
-(defn disable-contact? [contact {:keys [z-side in-zone?]}]
-  (let [normal (-> contact
-                   (.getWorldManifold)
-                   (.getNormal))]
-    (and (not in-zone?)
-         (or
-           (and (= z-side :right) (.epsilonEquals normal (vector-2 1.0 0.0) 0.1))
-           (and (= z-side :bottom) (.epsilonEquals normal (vector-2 0.0 -1.0) 0.1)
-                (and (= z-side :left) (.epsilonEquals normal (vector-2 -1.0 0.0) 0.1)))))))
-
 (defscreen main-screen
 
            :on-show
@@ -87,20 +81,20 @@
                 (create-player-entity screen)]))
 
            :on-render
-           (fn [{:keys [debug-physics? camera] :as screen} entities]
+           (fn [{:keys [debug-physics?] :as screen} entities]
 
              (clear!)
 
              (let [[screen entities] (may-spawn-enemy screen entities)
                    entities (->> entities
-                              (step! screen)
-                              change-player-level
-                              (animate-player screen)
-                              (animate-plante screen)
-                              (animate-enemies screen)
-                              (map set-enemy-in-zone)
-                              (map move-enemy)
-                              (render! screen))]
+                                 (step! screen)
+                                 change-player-level
+                                 (animate-player screen)
+                                 (animate-plante screen)
+                                 (animate-enemies screen)
+                                 (map set-enemy-in-zone)
+                                 (map move-enemy)
+                                 (render! screen))]
 
                (when debug-physics?
                  (draw-physics-bodies screen))
@@ -134,9 +128,9 @@
 
            :on-pre-solve
            (fn [{:keys [^Contact contact] :as screen} entities]
-             (let [{:keys [player enemy wall plante-zone]} (coliding-entities screen entities)
-                   disable-contact? (disable-contact? contact enemy)]
-               (when (and enemy wall disable-contact?)
+             (let [{:keys [player enemy enemy-1 enemy-2 wall plante-zone]} (coliding-entities screen entities)]
+               (when (or (and enemy wall (not (:in-zone? enemy)))
+                         (and enemy-1 enemy-2 (or (not (:in-zone? enemy-1)) (not (:in-zone? enemy-2)))))
                  (.setEnabled contact false))
                (when (and plante-zone player)
                  (.setEnabled contact false))
