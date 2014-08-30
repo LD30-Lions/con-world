@@ -1,7 +1,13 @@
 (in-ns 'con-world.core)
 
-(defn find-enemy [entities]
-  (some #(when (:enemy? %) %) entities))
+(defn find-enemy
+  ([entities]
+   (some #(when (:enemy? %) %) entities))
+  ([entities enemy-id]
+   (some
+     (fn [{:keys [enemy? id] :as enemy}]
+       (when (and enemy? (= id enemy-id)) enemy))
+     entities)))
 
 (defn random-vec2
   [x-max y-max]
@@ -30,7 +36,7 @@
 (def enemy-restitution 0.7)
 
 (defn set-enemy-restitution [enemy-entity enemy-restitution]
-   (-> enemy-entity
+  (-> enemy-entity
       (body! :get-fixture-list)
       (.get 0)
       (fixture! :set-restitution enemy-restitution))
@@ -85,6 +91,7 @@
         width (u/pixels->world size)]
     (->
       (assoc stand
+        :id (inc-id)
         :stand stand
         :walk (animation 0.1 en-images :set-play-mode (play-mode :loop-pingpong))
         :body (create-enemy-body! screen (/ width 2))

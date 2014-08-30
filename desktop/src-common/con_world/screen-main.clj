@@ -23,31 +23,7 @@
      :plante-zone (find-plante-zone coliding-entities)
      :wall        (find-wall coliding-entities)}))
 
-(defn do-player-lose [entities {:keys [life level] :as player}]
-  (let [new-life (- life 5)
-        new-level (calculate-level player)
-        new-level? (not= new-level level)]
-    (println "new-life" new-life "new-level" new-level)
-    (touched-by-enemy-sound)
-    (when new-level? (changed-level-sound player))
-    (run! score-screen :update-score :score new-life)
-    (run! score-screen :update-level :level new-level)
-    (replace {player (->> (assoc player :life new-life :level new-level)
-                          (update-cell-sprite!))} entities)))
 
-(defn do-player-win [entities {:keys [level life] :as player} enemy]
-  (let [new-life (inc life)
-        new-level (or (calculate-level player) level)
-        new-level? (not= new-level level)]
-    (println "new-life" new-life "new-level" new-level)
-    (kill-enemy-sound player)
-    (when new-level? (changed-level-sound player))
-    (run! score-screen :update-level :level new-level)
-    (run! score-screen :update-score :score new-life)
-    (->> entities
-         (remove #(= % enemy))
-         (replace {player (->> (assoc player :life new-life :level new-level)
-                               (update-cell-sprite!))}))))
 
 
 (defn on-show [screen _]
@@ -73,22 +49,21 @@
      (create-plante-zone! screen)
      (create-player-entity screen)]))
 
+
+
 (defn on-render [{:keys [debug-physics?] :as screen} entities]
 
   (clear!)
 
   (let [[screen entities] (may-spawn-enemy screen entities)]
-
     (when debug-physics?
       (draw-physics-bodies screen))
 
     (if (player-dead? entities)
-
       (game-over screen)
-
       (let [result-entities (->> entities
-                                 (apply-events screen)
                                  (step! screen)
+                                 (apply-events)
                                  change-player-level
                                  (animate-player screen)
                                  (animate-plante screen)
@@ -96,12 +71,12 @@
                                  (map set-enemy-in-zone)
                                  (map move-enemy)
                                  (render! screen))]
-        (update! screen :events [])
+        (clear-events screen)
         result-entities))))
 
 (defn on-key-down [{:keys [key debug-physics?] :as screen} entities]
   (when-let [direction (key->direction key)]
-    (update! screen :events (conj (:events screen) [:player-moved direction])))
+    (add-event screen [:player-moved direction]))
   (when (= 255 key)
     (update! screen :debug-physics? (not debug-physics?)))
   entities)
@@ -111,11 +86,11 @@
 
 (defn on-end-contact [screen entities]
   (let [{:keys [player enemy]} (coliding-entities screen entities)]
-    (if (and player enemy)
+    (when (and player enemy)
       (if (player-win? player enemy)
-        (do-player-win entities player enemy)
-        (do-player-lose entities player))
-      entities)))
+        (add-event screen [:player-ate-enemy (:id enemy)])
+        (add-event screen [:player-hurt-by-enemy (:id enemy)])))
+    entities))
 
 (defn on-pre-solve [{:keys [^Contact contact] :as screen} entities]
   (let [{:keys [player enemy enemy-1 enemy-2 wall plante-zone]} (coliding-entities screen entities)]

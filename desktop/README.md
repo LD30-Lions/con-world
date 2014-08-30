@@ -14,4 +14,10 @@
 (in-ns 'con-world.core)
 (on-gl (set-screen! con-world main-screen score-screen))
 
+
+(doseq [enemy (filter #(:enemy? %) (-> main-screen :entities deref))]
+  (on-gl (add-event (-> main-screen :screen deref) [:player-ate-enemy (:id enemy)])))
+
+(on-gl (add-event (-> main-screen :screen deref) [:player-ate-enemy 0]))
+
 ~~~

@@ -18,6 +18,12 @@
 (defn start-main-screens []
   (set-screen! con-world main-screen score-screen #_main-bg-screen))
 
+(def events (atom []))
+
+; ids generator
+(def id (atom 0))
+(def inc-id #(swap! id inc))
+
 (load "utils-graphics")
 (load "sound")
 (load "debug")
