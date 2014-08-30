@@ -52,83 +52,85 @@
 
 (defn on-show [screen _]
 
-             (let [background (u/memo-texture "main-screen-background-1.png")
-                   background (assoc background
-                                :width (u/pixels->world (texture! background :get-region-width))
-                                :height (u/pixels->world (texture! background :get-region-height)))
-                   screen (-> (init-graphic-settings screen)
-                              (update!
-                                :world (box-2d 0 0)
-                                :music (memo-sound "sound/fond.mp3")
-                                :bg-width (:width background)
-                                :bg-height (:height background)
-                                :last-spawn 0))]
+  (let [background (u/memo-texture "main-screen-background-1.png")
+        background (assoc background
+                     :width (u/pixels->world (texture! background :get-region-width))
+                     :height (u/pixels->world (texture! background :get-region-height)))
+        screen (-> (init-graphic-settings screen)
+                   (update!
+                     :world (box-2d 0 0)
+                     :music (memo-sound "sound/fond.mp3")
+                     :bg-width (:width background)
+                     :bg-height (:height background)
+                     :last-spawn 0))]
 
-               (add-timer! screen :ambiant-sound 3 3)
-               (sound! (:music screen) :loop)
+    (add-timer! screen :ambiant-sound 3 3)
+    (sound! (:music screen) :loop)
 
-               [background
-                (create-uber-wall-entity screen)
-                (create-wall-entity screen)
-                (create-plante-zone! screen)
-                (create-player-entity screen)]))
+    [background
+     (create-uber-wall-entity screen)
+     (create-wall-entity screen)
+     (create-plante-zone! screen)
+     (create-player-entity screen)]))
 
 (defn on-render [{:keys [debug-physics?] :as screen} entities]
 
-             (clear!)
+  (clear!)
 
-             (let [[screen entities] (may-spawn-enemy screen entities)]
+  (let [[screen entities] (may-spawn-enemy screen entities)]
 
-               (when debug-physics?
-                 (draw-physics-bodies screen))
+    (when debug-physics?
+      (draw-physics-bodies screen))
 
-               (if (player-dead? entities)
+    (if (player-dead? entities)
 
-                 (game-over screen)
+      (game-over screen)
 
-                 (let [result-entities (->> entities
-                                            (apply-events screen)
-                                            (step! screen)
-                                            change-player-level
-                                            (animate-player screen)
-                                            (animate-plante screen)
-                                            (animate-enemies screen)
-                                            (map set-enemy-in-zone)
-                                            (map move-enemy)
-                                            (render! screen))]
-                   (update! screen :events [])
-                   result-entities))))
+      (let [result-entities (->> entities
+                                 (apply-events screen)
+                                 (step! screen)
+                                 change-player-level
+                                 (animate-player screen)
+                                 (animate-plante screen)
+                                 (animate-enemies screen)
+                                 (map set-enemy-in-zone)
+                                 (map move-enemy)
+                                 (render! screen))]
+        (update! screen :events [])
+        result-entities))))
 
 (defn on-key-down [{:keys [key debug-physics?] :as screen} entities]
-             (when-let [direction (key->direction key)]
-               (update! screen :events (conj (:events screen) [:player-moved direction])))
-             (when (= 255 key)
-                            (update! screen :debug-physics? (not debug-physics?)))
-             entities)
+  (when-let [direction (key->direction key)]
+    (update! screen :events (conj (:events screen) [:player-moved direction])))
+  (when (= 255 key)
+    (update! screen :debug-physics? (not debug-physics?)))
+  entities)
+
 (defn on-resize [screen _]
-             (size! screen (:bg-width screen) (:bg-height screen)))
+  (size! screen (:bg-width screen) (:bg-height screen)))
 
 (defn on-end-contact [screen entities]
-             (let [{:keys [player enemy]} (coliding-entities screen entities)]
-               (if (and player enemy)
-                 (if (player-win? player enemy)
-                   (do-player-win entities player enemy)
-                   (do-player-lose entities player))
-                 entities)))
+  (let [{:keys [player enemy]} (coliding-entities screen entities)]
+    (if (and player enemy)
+      (if (player-win? player enemy)
+        (do-player-win entities player enemy)
+        (do-player-lose entities player))
+      entities)))
+
 (defn on-pre-solve [{:keys [^Contact contact] :as screen} entities]
-             (let [{:keys [player enemy enemy-1 enemy-2 wall plante-zone]} (coliding-entities screen entities)]
-               (when (or (and enemy wall (not (:in-zone? enemy)))
-                         (and enemy-1 enemy-2 (or (not (:in-zone? enemy-1)) (not (:in-zone? enemy-2)))))
-                 (.setEnabled contact false))
-               (when (and plante-zone player)
-                 (.setEnabled contact false))
-               entities))
+  (let [{:keys [player enemy enemy-1 enemy-2 wall plante-zone]} (coliding-entities screen entities)]
+    (when (or (and enemy wall (not (:in-zone? enemy)))
+              (and enemy-1 enemy-2 (or (not (:in-zone? enemy-1)) (not (:in-zone? enemy-2)))))
+      (.setEnabled contact false))
+    (when (and plante-zone player)
+      (.setEnabled contact false))
+    entities))
 
 (defn on-timer [screen entities]
-             (when (= :ambiant-sound (:id screen))
-               (when (even? (rand-int 2))
-                 (ambiant-sound (find-player entities)))
-               entities))
+  (when (= :ambiant-sound (:id screen))
+    (when (even? (rand-int 2))
+      (ambiant-sound (find-player entities)))
+    entities))
 
 (defscreen main-screen
            :on-show on-show
