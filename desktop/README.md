@@ -16,8 +16,8 @@
 
 
 (doseq [enemy (filter #(:enemy? %) (-> main-screen :entities deref))]
-  (on-gl (add-event (-> main-screen :screen deref) [:player-ate-enemy (:id enemy)])))
+  (on-gl (add-event [:player-ate-enemy (:id enemy)])))
 
-(on-gl (add-event (-> main-screen :screen deref) [:player-ate-enemy 0]))
+(on-gl (add-event [:player-ate-enemy 0]))
 
 ~~~

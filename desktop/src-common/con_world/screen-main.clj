@@ -31,7 +31,8 @@
   (let [background (u/memo-texture "main-screen-background-1.png")
         background (assoc background
                      :width (u/pixels->world (texture! background :get-region-width))
-                     :height (u/pixels->world (texture! background :get-region-height)))
+                     :height (u/pixels->world (texture! background :get-region-height))
+                     :background? true)
         screen (-> (init-graphic-settings screen)
                    (update!
                      :world (box-2d 0 0)
@@ -41,6 +42,7 @@
                      :last-spawn 0))]
 
     (add-timer! screen :ambiant-sound 3 3)
+    (add-timer! screen :spawn-enemy 3 5)
     (sound! (:music screen) :loop)
 
     [background
@@ -55,28 +57,29 @@
 
   (clear!)
 
-  (let [[screen entities] (may-spawn-enemy screen entities)]
-    (when debug-physics?
-      (draw-physics-bodies screen))
 
-    (if (player-dead? entities)
-      (game-over screen)
-      (let [result-entities (->> entities
-                                 (step! screen)
-                                 (apply-events)
-                                 change-player-level
-                                 (animate-player screen)
-                                 (animate-plante screen)
-                                 (animate-enemies screen)
-                                 (map set-enemy-in-zone)
-                                 (map move-enemy)
-                                 (render! screen))]
-        (clear-events screen)
-        result-entities))))
+
+
+  (if (player-dead? entities)
+    (game-over screen)
+    (let [result-entities (->> entities
+                               (step! screen)
+                               (apply-events screen)
+                               change-player-level
+                               (animate-player screen)
+                               (animate-plante screen)
+                               (animate-enemies screen)
+                               (map set-enemy-in-zone)
+                               (map move-enemy)
+                               (render! screen))]
+      (clear-events screen)
+      (when debug-physics?
+          (draw-physics-bodies screen))
+      result-entities)))
 
 (defn on-key-down [{:keys [key debug-physics?] :as screen} entities]
   (when-let [direction (key->direction key)]
-    (add-event screen [:player-moved direction]))
+    (add-event [:player-moved direction]))
   (when (= 255 key)
     (update! screen :debug-physics? (not debug-physics?)))
   entities)
@@ -88,8 +91,8 @@
   (let [{:keys [player enemy]} (coliding-entities screen entities)]
     (when (and player enemy)
       (if (player-win? player enemy)
-        (add-event screen [:player-ate-enemy (:id enemy)])
-        (add-event screen [:player-hurt-by-enemy (:id enemy)])))
+        (add-event [:player-ate-enemy (:id enemy)])
+        (add-event [:player-hurt-by-enemy (:id enemy)])))
     entities))
 
 (defn on-pre-solve [{:keys [^Contact contact] :as screen} entities]
@@ -104,8 +107,10 @@
 (defn on-timer [screen entities]
   (when (= :ambiant-sound (:id screen))
     (when (even? (rand-int 2))
-      (ambiant-sound (find-player entities)))
-    entities))
+      (ambiant-sound (find-player entities))))
+  (when (= :spawn-enemy (:id screen))
+    (add-event [:enemy-spawned]))
+  entities)
 
 (defscreen main-screen
            :on-show on-show

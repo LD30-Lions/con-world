@@ -79,7 +79,8 @@
           :right [(+ x-max width box2d-margin-bug) (rand-int y-max) (- u/cell-x-velocity) 0]
           :bottom [(rand-int x-max) (- (+ height box2d-margin-bug)) 0 u/cell-y-velocity]
           :left [(- (+ width box2d-margin-bug)) (rand-int y-max) u/cell-x-velocity 0])]
-    (doto enemy-entity
+    (doto
+      (assoc enemy-entity :x x :y y)                                     ; body position will just set physical x and y. When calling (step!) then :x and :y is set
       (body-position! x y 0)
       (body! :set-linear-velocity x-velocity y-velocity))))
 
@@ -102,16 +103,6 @@
         :level e-level)
       (init-enemy-body-spacial-settings))))
 
-(defn may-spawn-enemy
-  "TODO : make timer reliable"
-  [{:keys [last-spawn total-time] :as screen} entities]
-  (if (and (not= last-spawn (int total-time))
-           (even? (int total-time)))
-    (do
-      (spawn-enemy-sound (find-player entities))
-      [(play-clj.core/update! screen :last-spawn (int total-time)) (conj entities (spawn-enemy screen entities))])
-
-    [screen entities]))
 
 (defn animate-enemies [screen entities]
   (map (fn [entity]
