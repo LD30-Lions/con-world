@@ -1,10 +1,5 @@
 (in-ns 'con-world.core)
 
-(defn on-key-move-cell [entities direction]
-  (cell-move-sound)
-  (let [cell (find-player entities)]
-    (replace {cell (move-cell cell direction)}
-             entities)))
 
 (defn game-over [screen]
   (do (set-screen! con-world game-over-screen)
@@ -53,21 +48,9 @@
          (remove #(= % enemy))
          (replace {player (->> (assoc player :life new-life :level new-level)
                                (update-cell-sprite!))}))))
-(defmulti apply-event (fn [_ _ [type & _]] type))
 
-(defmethod apply-event :player-moved [screen entities [_ direction]]
-  (on-key-move-cell entities direction))
 
-(defn apply-events [{:keys [events] :as screen} entities]
-  (reduce (fn [entities evt]
-            (apply-event screen entities evt))
-          entities
-          events))
-
-(defscreen main-screen
-
-           :on-show
-           (fn [screen _]
+(defn on-show [screen _]
 
              (let [background (u/memo-texture "main-screen-background-1.png")
                    background (assoc background
@@ -90,8 +73,7 @@
                 (create-plante-zone! screen)
                 (create-player-entity screen)]))
 
-           :on-render
-           (fn [{:keys [debug-physics?] :as screen} entities]
+(defn on-render [{:keys [debug-physics?] :as screen} entities]
 
              (clear!)
 
@@ -117,29 +99,23 @@
                    (update! screen :events [])
                    result-entities))))
 
-           :on-key-down
-           (fn [{:keys [key debug-physics?] :as screen} entities]
+(defn on-key-down [{:keys [key debug-physics?] :as screen} entities]
              (when-let [direction (key->direction key)]
                (update! screen :events (conj (:events screen) [:player-moved direction])))
              (when (= 255 key)
                             (update! screen :debug-physics? (not debug-physics?)))
              entities)
-
-           :on-resize
-           (fn [screen _]
+(defn on-resize [screen _]
              (size! screen (:bg-width screen) (:bg-height screen)))
 
-           :on-end-contact
-           (fn [screen entities]
+(defn on-end-contact [screen entities]
              (let [{:keys [player enemy]} (coliding-entities screen entities)]
                (if (and player enemy)
                  (if (player-win? player enemy)
                    (do-player-win entities player enemy)
                    (do-player-lose entities player))
                  entities)))
-
-           :on-pre-solve
-           (fn [{:keys [^Contact contact] :as screen} entities]
+(defn on-pre-solve [{:keys [^Contact contact] :as screen} entities]
              (let [{:keys [player enemy enemy-1 enemy-2 wall plante-zone]} (coliding-entities screen entities)]
                (when (or (and enemy wall (not (:in-zone? enemy)))
                          (and enemy-1 enemy-2 (or (not (:in-zone? enemy-1)) (not (:in-zone? enemy-2)))))
@@ -148,9 +124,17 @@
                  (.setEnabled contact false))
                entities))
 
-           :on-timer
-           (fn [screen entities]
+(defn on-timer [screen entities]
              (when (= :ambiant-sound (:id screen))
                (when (even? (rand-int 2))
                  (ambiant-sound (find-player entities)))
-               entities)))
+               entities))
+
+(defscreen main-screen
+           :on-show on-show
+           :on-render on-render
+           :on-key-down on-key-down
+           :on-resize on-resize
+           :on-end-contact on-end-contact
+           :on-pre-solve on-pre-solve
+           :on-timer on-timer)

@@ -27,6 +27,7 @@
 (load "entity-enemy")
 (load "entity-plante")
 
+(load "event-handlers")
 (load "screen-main")
 (load "screen-score")
 (load "screen-intro")
