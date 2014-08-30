@@ -53,6 +53,16 @@
          (remove #(= % enemy))
          (replace {player (->> (assoc player :life new-life :level new-level)
                                (update-cell-sprite!))}))))
+(defmulti apply-event (fn [_ _ [type & _]] type))
+
+(defmethod apply-event :player-moved [screen entities [_ direction]]
+  (on-key-move-cell entities direction))
+
+(defn apply-events [{:keys [events] :as screen} entities]
+  (reduce (fn [entities evt]
+            (apply-event screen entities evt))
+          entities
+          events))
 
 (defscreen main-screen
 
@@ -85,16 +95,7 @@
 
              (clear!)
 
-             (let [[screen entities] (may-spawn-enemy screen entities)
-                   entities (->> entities
-                                 (step! screen)
-                                 change-player-level
-                                 (animate-player screen)
-                                 (animate-plante screen)
-                                 (animate-enemies screen)
-                                 (map set-enemy-in-zone)
-                                 (map move-enemy)
-                                 (render! screen))]
+             (let [[screen entities] (may-spawn-enemy screen entities)]
 
                (when debug-physics?
                  (draw-physics-bodies screen))
@@ -103,15 +104,26 @@
 
                  (game-over screen)
 
-                 entities)))
+                 (let [result-entities (->> entities
+                                            (apply-events screen)
+                                            (step! screen)
+                                            change-player-level
+                                            (animate-player screen)
+                                            (animate-plante screen)
+                                            (animate-enemies screen)
+                                            (map set-enemy-in-zone)
+                                            (map move-enemy)
+                                            (render! screen))]
+                   (update! screen :events [])
+                   result-entities))))
 
            :on-key-down
            (fn [{:keys [key debug-physics?] :as screen} entities]
              (when-let [direction (key->direction key)]
-               (on-key-move-cell entities direction))
+               (update! screen :events (conj (:events screen) [:player-moved direction])))
              (when (= 255 key)
-               (update! screen :debug-physics? (not debug-physics?))
-               entities))
+                            (update! screen :debug-physics? (not debug-physics?)))
+             entities)
 
            :on-resize
            (fn [screen _]
