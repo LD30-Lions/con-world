@@ -57,25 +57,24 @@
 
   (clear!)
 
-
-
-
   (if (player-dead? entities)
+
     (game-over screen)
-    (let [result-entities (->> entities
-                               (step! screen)
-                               (apply-events screen)
-                               change-player-level
-                               (animate-player screen)
-                               (animate-plante screen)
-                               (animate-enemies screen)
-                               (map set-enemy-in-zone)
-                               (map move-enemy)
-                               (render! screen))]
-      (clear-events screen)
-      (when debug-physics?
+    (do
+      (add-event [:step])
+      (let [result-entities (->> entities
+                                 (apply-events screen)
+                                 change-player-level
+                                 (animate-player screen)
+                                 (animate-plante screen)
+                                 (animate-enemies screen)
+                                 (map set-enemy-in-zone)
+                                 (map move-enemy)
+                                 (render! screen))]
+
+        (when debug-physics?
           (draw-physics-bodies screen))
-      result-entities)))
+        result-entities))))
 
 (defn on-key-down [{:keys [key debug-physics?] :as screen} entities]
   (when-let [direction (key->direction key)]

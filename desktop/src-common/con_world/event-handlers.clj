@@ -1,18 +1,20 @@
 (in-ns 'con-world.core)
 
-(defn clear-events [_]
-  (reset! events []))
-
 (defn add-event [event]
   (swap! events conj event))
 
 (defmulti apply-event (fn [_ _ [type & _]] type))
 
 (defn apply-events [screen entities]
-  (reduce (fn [entities evt]
-            (vec (apply-event screen (vec entities) evt)))
-          entities
-          @events))
+  (loop [evts @events entities entities]
+    (if (not-empty evts)
+      (recur
+        (swap! events rest)
+        (vec (apply-event screen (vec entities) (first evts))))
+      entities)))
+
+(defmethod apply-event :step [screen entities _]
+  (step! screen entities))
 
 (defmethod apply-event :enemy-spawned [screen entities _]
   (let [enemy (spawn-enemy screen entities)]
