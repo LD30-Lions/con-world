@@ -79,7 +79,7 @@
 (defn on-key-down [{:keys [key debug-physics?] :as screen} entities]
   (when-let [direction (key->direction key)]
     (add-event [:player-moved direction]))
-  (when (= 255 key)
+  (when (= (key-code :F12) key)
     (update! screen :debug-physics? (not debug-physics?)))
   entities)
 
