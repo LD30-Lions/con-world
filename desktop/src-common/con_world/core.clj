@@ -18,8 +18,6 @@
 (defn start-main-screens []
   (set-screen! con-world main-screen score-screen #_main-bg-screen))
 
-(def events (atom []))
-
 ; ids generator
 (def id (atom 0))
 (def inc-id #(swap! id inc))
@@ -27,13 +25,14 @@
 (load "utils-graphics")
 (load "sound")
 (load "debug")
+(load "event-utils")
 
 (load "entity-wall")
 (load "entity-player")
 (load "entity-enemy")
+(load "event-handlers")
 (load "entity-plante")
 
-(load "event-handlers")
 (load "screen-main")
 (load "screen-score")
 (load "screen-intro")

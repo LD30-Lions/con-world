@@ -74,9 +74,10 @@
   (>= p-level e-level))
 
 (defn change-player-level [entities]
-  (let [player (find-player entities)]
-    (replace {player (merge player
-                          (u/memo-texture (str "cell" (:level player) ".png")))}
+  (let [{:keys [level] :as player} (find-player entities)
+        player-updated (merge player
+                              (u/memo-texture (str "cell" level ".png")))]
+    (replace {player player-updated}
              entities)))
 
 (defn moving? [player-entity]

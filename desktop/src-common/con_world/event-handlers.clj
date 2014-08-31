@@ -1,25 +1,23 @@
 (in-ns 'con-world.core)
 
-(defn add-event [event]
-  (swap! events conj event))
-
-(defmulti apply-event (fn [_ _ [type & _]] type))
-
-(defn apply-events [screen entities]
-  (loop [evts @events entities entities]
-    (if (not-empty evts)
-      (recur
-        (swap! events rest)
-        (vec (apply-event screen (vec entities) (first evts))))
-      entities)))
-
-(defmethod apply-event :step [screen entities _]
+(defmethod apply-event :world-stepped [screen entities _]
   (step! screen entities))
 
 (defmethod apply-event :enemy-spawned [screen entities _]
   (let [enemy (spawn-enemy screen entities)]
     (conj entities enemy)))
 
+(defmethod apply-event :enemy-entered-zone [_ entities [_ id]]
+  (let [enemy (find-enemy entities id)
+        enemy-updated (-> (assoc enemy :in-zone? true)
+                          (set-enemy-restitution enemy-restitution)
+                          (doto (body! :set-linear-damping enemy-damping)))]
+    (replace {enemy enemy-updated} entities)))
+
+(defmethod apply-event :enemy-moved [_ entities [_ id vec2-velocity]]
+  (let [enemy (find-enemy entities id)]
+    (replace {enemy (change-enemy-velocity enemy vec2-velocity)}
+             entities)))
 
 (defmethod apply-event :player-moved [_ entities [_ direction]]
   (cell-move-sound)

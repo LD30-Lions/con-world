@@ -16,9 +16,8 @@
   (let [added-velocity (map #(-> % rand-int u/rand-sign) [u/enemy-x-velocity u/enemy-y-velocity])]
     (apply vector-2* added-velocity)))
 
-(defn change-enemy-velocity [enemy-entity]
-  (let [added-velocity (random-vec2 u/enemy-x-velocity u/enemy-y-velocity)]
-    (phy/add-velocity enemy-entity added-velocity)))
+(defn change-enemy-velocity [enemy-entity added-velocity]
+  (phy/add-velocity enemy-entity added-velocity))
 
 (defn moving-fast? [entity]
   (let [^Vector2 vec2-velocity (body! entity :get-linear-velocity)
@@ -26,11 +25,10 @@
         y-velocity (.y vec2-velocity)]
     (or (> x-velocity u/moving-slow) (> y-velocity u/moving-slow))))
 
-(defn move-enemy [{:keys [enemy? in-zone?] :as enemy-entity}]
-  (if (and enemy? in-zone? (not (moving-fast? enemy-entity)))
-    (change-enemy-velocity enemy-entity)
-    enemy-entity))
-
+(defn move-enemy [{:keys [enemy? in-zone? id] :as enemy-entity}]
+  (when (and enemy? in-zone? (not (moving-fast? enemy-entity)))
+    (let [added-velocity (random-vec2 u/enemy-x-velocity u/enemy-y-velocity)]
+      (add-event [:enemy-moved id added-velocity]))))
 
 (def enemy-damping 3)
 (def enemy-restitution 0.7)
@@ -42,15 +40,11 @@
       (fixture! :set-restitution enemy-restitution))
   enemy-entity)
 
-(defn set-enemy-in-zone [{:keys [in-zone? enemy?] :as enemy-entity}]
-  (if (and (not in-zone?) enemy?)
-    (let [r (rectangle 0 0 u/w-width u/w-height)]
-      (if (u/in-rectangle? enemy-entity r)
-        (-> (assoc enemy-entity :in-zone? true)
-            (set-enemy-restitution enemy-restitution)
-            (doto (body! :set-linear-damping enemy-damping)))
-        enemy-entity))
-    enemy-entity))
+(defn set-enemy-in-zone [{:keys [in-zone? enemy? id] :as enemy-entity}]
+  (when (and (not in-zone?) enemy?)
+    (let [r (rectangle 0 0 u/z-width u/z-height)]
+      (when (u/in-rectangle? enemy-entity r)
+        (add-event [:enemy-entered-zone id])))))
 
 (def enemy-index
   {1 [25 3]

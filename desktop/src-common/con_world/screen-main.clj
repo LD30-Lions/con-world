@@ -61,15 +61,19 @@
 
     (game-over screen)
     (do
-      (add-event [:step])
+
+      (add-event [:world-stepped])
+
+      (doseq [entity entities]
+        (set-enemy-in-zone entity)
+        (move-enemy entity))
+
       (let [result-entities (->> entities
                                  (apply-events screen)
                                  change-player-level
                                  (animate-player screen)
                                  (animate-plante screen)
                                  (animate-enemies screen)
-                                 (map set-enemy-in-zone)
-                                 (map move-enemy)
                                  (render! screen))]
 
         (when debug-physics?
