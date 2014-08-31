@@ -79,11 +79,13 @@
                           (u/memo-texture (str "cell" (:level player) ".png")))}
              entities)))
 
+(defn moving? [player-entity]
+  (let [velocity (body! player-entity :get-linear-velocity)]
+    (vector-2! velocity :is-zero 1)))
+
 (defn animate-player [screen entities]
-  (let [player (find-player entities)
-        velocity (body! player :get-linear-velocity)
-        not-moving (vector-2! velocity :is-zero 1)]
-    (if not-moving
+  (let [player (find-player entities)]
+    (if (not (moving? player))
       (replace {player (merge player (:stand player))} entities)
       (replace {player (merge player (animation->texture screen (:walk player)))} entities))))
 
