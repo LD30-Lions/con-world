@@ -36,3 +36,11 @@
 (defn in-rectangle? [{:keys [x y width height]} r]
   (and (rectangle! r :contains x y) (rectangle! r :contains (+ x width) (+ y height))))
 
+(def key->direction
+  {(key-code :dpad-up)    :up,
+   (key-code :dpad-down)  :down,
+   (key-code :dpad-left)  :left,
+   (key-code :dpad-right) :right})
+
+(defn transition-screen! [{:keys [game next-screens] :as screen} transition-name]
+  (apply set-screen! game (get next-screens transition-name)))

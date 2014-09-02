@@ -1,4 +1,8 @@
-(in-ns 'con-world.core)
+(ns con-world.utils-graphics
+  (:import (com.badlogic.gdx.utils.viewport FitViewport))
+  (:require [con-world.utils :as u]
+            [play-clj.g2d :refer :all]
+            [play-clj.core :refer :all]))
 
 (defn stage-fit-vp [camera]
   (stage :set-viewport (FitViewport. u/res-width u/res-height camera)))

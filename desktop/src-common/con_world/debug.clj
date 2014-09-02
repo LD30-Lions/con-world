@@ -1,4 +1,9 @@
-(in-ns 'con-world.core)
+(ns con-world.debug
+  (:import (com.badlogic.gdx.graphics Camera))
+  (:import (com.badlogic.gdx.physics.box2d Box2DDebugRenderer))
+  (:require [clojure.pprint :refer [pprint]]))
+
+(declare main-screen)
 
 (def debug-margin 10)
 

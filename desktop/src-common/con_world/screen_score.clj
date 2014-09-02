@@ -1,4 +1,8 @@
-(in-ns 'con-world.core)
+(ns con-world.screen-score
+  (:require [play-clj.core :refer :all]
+            [play-clj.ui :refer :all]))
+
+(declare score-screen)
 
 (defn find-level [entities]
   (some #(when (:level? %) %) entities))

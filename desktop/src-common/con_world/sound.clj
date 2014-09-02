@@ -1,4 +1,5 @@
-(in-ns 'con-world.core)
+(ns con-world.sound
+  (:require [play-clj.core :refer :all]))
 
 (def tonalites {1 [9, 11, 12, 14, 16, 17, 19, 21]
                 2 [4, 6, 7, 9, 11, 12, 14, 16]

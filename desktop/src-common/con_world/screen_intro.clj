@@ -1,4 +1,12 @@
-(in-ns 'con-world.core)
+(ns con-world.screen-intro
+  (:require [con-world.sound :as snd]
+            [con-world.utils :as u]
+            [con-world.utils-graphics :as gfx]
+            [play-clj.core :refer :all]
+            [play-clj.g2d :refer :all]
+            [play-clj.ui :refer :all]))
+
+(declare intro-screen)
 
 (defn intro-screen-background []
   (u/memo-texture "intro-screen-background.png"))
@@ -7,8 +15,8 @@
            :on-show
            (fn [screen _]
              (let [background (intro-screen-background)
-                   music (memo-sound "intro-screen-music.mp3")]
-               (update! (init-graphic-settings screen)
+                   music (snd/memo-sound "intro-screen-music.mp3")]
+               (update! (gfx/init-graphic-settings screen)
                         :bg-width (texture! background :get-region-width)
                         :bg-height (texture! background :get-region-height)
                         :music music)
@@ -21,7 +29,7 @@
              (if kill-screen?
                (do
                  (update! screen :kill-screen? false)
-                 (start-main-screens)
+                 (u/transition-screen! screen :main)
                  (sound! music :stop))
                (do (clear! 0 0 0 1)
                    (render! screen entities))))

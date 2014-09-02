@@ -1,9 +1,15 @@
-(in-ns 'con-world.core)
+(ns con-world.screen-gameover
+  (:require [play-clj.core :refer :all]
+            [play-clj.ui :refer :all]
+            [con-world.utils-graphics :as gfx]
+            [con-world.utils :as u]))
+
+(declare game-over-screen)
 
 (defscreen game-over-screen
            :on-show
            (fn [screen _]
-             (init-graphic-settings screen)
+             (gfx/init-graphic-settings screen)
              ; FIX son de Ben
              #_(sound! (u/memo-sound "sound/gameover.wav") :play)
              (label "Game over" (color :red)))
@@ -14,13 +20,13 @@
              (render! screen entities))
 
            :on-key-down
-           (fn [_ entities]
-             (start-main-screens)
+           (fn [screen entities]
+             (u/transition-screen! screen :main)
              entities)
 
            :on-touch-down
-           (fn [_ entities]
-             (start-main-screens)
+           (fn [screen entities]
+             (u/transition-screen! screen :main)
              entities)
 
            :on-resize

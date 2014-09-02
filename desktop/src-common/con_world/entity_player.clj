@@ -1,4 +1,10 @@
-(in-ns 'con-world.core)
+(ns con-world.entity-player
+  (:require [con-world.utils :as u]
+            [con-world.utils-graphics :as gfx]
+            [con-world.physics :as phy]
+            [play-clj.g2d-physics :refer :all]
+            [play-clj.g2d :refer :all]
+            [play-clj.math :refer :all]))
 
 (defn find-player [entities]
   (some #(when (:cell? %) %) entities))
@@ -20,7 +26,7 @@
 
 (defn create-cell-entity!
   [screen]
-  (let [{cell-images :sprites stand :first} (image->sprite "entities/cell1.png" 40 40 2)
+  (let [{cell-images :sprites stand :first} (gfx/image->sprite "entities/cell1.png" 40 40 2)
         width (u/pixels->world (texture! stand :get-region-width))
         height (u/pixels->world (texture! stand :get-region-height))]
     (assoc stand
@@ -35,7 +41,7 @@
 (defn update-cell-sprite!
   [{:keys [level] :as player}]
   (let [[size nb] (player-index level)
-        {cell-images :sprites stand :first} (image->sprite (str "entities/cell" level ".png") size size nb)
+        {cell-images :sprites stand :first} (gfx/image->sprite (str "entities/cell" level ".png") size size nb)
         width (u/pixels->world (texture! stand :get-region-width))
         height (u/pixels->world (texture! stand :get-region-height))]
     (assoc player

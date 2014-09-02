@@ -1,4 +1,16 @@
-(in-ns 'con-world.core)
+(ns con-world.entity-enemy
+  (:import (com.badlogic.gdx.math Vector2))
+  (:require [con-world.state :as state]
+            [con-world.physics :as phy]
+            [con-world.entity-player :as ply]
+            [con-world.entity-plante :as plt]
+            [con-world.entity-wall :as wll]
+            [con-world.utils :as u]
+            [con-world.utils-graphics :as gfx]
+            [con-world.sound :as snd]
+            [play-clj.g2d-physics :refer :all]
+            [play-clj.g2d :refer :all]
+            [play-clj.math :refer :all]))
 
 (defn find-enemy
   ([entities]
@@ -84,14 +96,14 @@
       (body! :set-linear-velocity x-velocity y-velocity))))
 
 (defn spawn-enemy [screen entities]
-  (let [{:keys [level]} (find-player entities)
+  (let [{:keys [level]} (ply/find-player entities)
         e-level (inc (rand-int (inc level)))
         [size nb-sprite] (enemy-index e-level)
-        {en-images :sprites stand :first} (image->sprite (str "entities/ennemi" e-level ".png") size size nb-sprite)
+        {en-images :sprites stand :first} (gfx/image->sprite (str "entities/ennemi" e-level ".png") size size nb-sprite)
         width (u/pixels->world size)]
     (->
       (assoc stand
-        :id (inc-id)
+        :id (state/inc-id)
         :stand stand
         :walk (animation 0.1 en-images :set-play-mode (play-mode :loop-pingpong))
         :body (create-enemy-body! screen (/ width 2))
@@ -108,7 +120,7 @@
   (if (and (not= last-spawn (int total-time))
            (even? (int total-time)))
     (do
-      (spawn-enemy-sound (find-player entities))
+      (snd/spawn-enemy-sound (ply/find-player entities))
       [(play-clj.core/update! screen :last-spawn (int total-time)) (conj entities (spawn-enemy screen entities))])
 
     [screen entities]))
@@ -123,3 +135,15 @@
                (merge entity (animation->texture screen (:walk entity)))))
            entity))
        entities))
+
+(defn coliding-entities [screen entities]
+  (let [entities (filter #(contains? % :body) entities)
+        enemy-1 (find-enemy [(first-entity screen entities)])
+        enemy-2 (find-enemy [(second-entity screen entities)])
+        coliding-entities [(first-entity screen entities) (second-entity screen entities)]]
+    {:enemy-1     enemy-1
+     :enemy-2     enemy-2
+     :enemy       (or enemy-1 enemy-2)
+     :player      (ply/find-player coliding-entities)
+     :plante-zone (plt/find-plante-zone coliding-entities)
+     :wall        (wll/find-wall coliding-entities)}))

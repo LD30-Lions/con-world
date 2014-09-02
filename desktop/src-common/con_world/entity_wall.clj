@@ -1,4 +1,7 @@
-(in-ns 'con-world.core)
+(ns con-world.entity-wall
+  (:require [con-world.physics :as phy]
+            [con-world.utils :as u]
+            [play-clj.g2d-physics :refer [body-position!]]))
 
 (defn find-wall [entities]
   (some #(when (:wall? %) %) entities))
