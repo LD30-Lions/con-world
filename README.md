@@ -1,6 +1,6 @@
 ## Introduction
 
-A play-clj game in which ... well, that part is up to you.
+A play-clj game in which you play an underground organism that feeds a plant.
 
 ## Contents
 
@@ -10,6 +10,14 @@ A play-clj game in which ... well, that part is up to you.
 * `desktop/src-common` Cross-platform game code
 * `ios/src` iOS-specific code
 
-## Building
+## Quick Build & Run
 
-All projects can be built using [Nightcode](https://nightcode.info/), or on the command line using [Leiningen](https://github.com/technomancy/leiningen) with the [lein-droid](https://github.com/clojure-android/lein-droid) and [lein-fruit](https://github.com/oakes/lein-fruit) plugins.
+Get [Leiningen](https://github.com/technomancy/leiningen).
+
+`git clone git@github.com:LD30-Lions/con-world.git`
+
+`cd con-world/desktop`
+
+`lein uberjar`
+
+`java -jar target/con-world-0.0.1-SNAPSHOT-standalone.jar`
